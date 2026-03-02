@@ -4,7 +4,7 @@ namespace App\Http\Controllers\back;
 
 use App\Http\Controllers\Controller;
 use App\Models\LogoSection;
-use App\Models\Logo as LogoModel;
+use App\Models\logo as LogoModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -71,3 +71,5 @@ class LogoController extends Controller
         return redirect()->route('logos.index')->with('success', 'تم حذف اللوجو بنجاح');
     }
 }
+
+

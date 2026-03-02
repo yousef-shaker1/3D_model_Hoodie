@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\LogoSection;
-use App\Models\Order as OrderModel;
+use App\Models\order as OrderModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
@@ -80,5 +81,29 @@ class OrderController extends Controller
         $order->update(['status' => $request->status]);
 
         return response()->json(['success' => true]);
+    }
+    public function destroy($orderId)
+    {
+        $order = OrderModel::findOrFail($orderId);
+        $order->delete();
+
+        return redirect()->route('orders.index')
+            ->with('success', 'تم حذف الطلب بنجاح');
+    }
+    public function uploadTemp(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,gif,webp,svg|max:5120',
+        ]);
+
+        $file      = $request->file('image');
+        $filename  = 'logo_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+        // احفظ في نفس مجلد الـ logos الأصلية عشان يفضل متاح
+        $path      = $file->storeAs('logos/images', $filename, 'public');
+
+        return response()->json([
+            'url'  => asset('storage/' . $path),
+            'path' => $path,
+        ]);
     }
 }

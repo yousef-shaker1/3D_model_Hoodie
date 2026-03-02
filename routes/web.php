@@ -52,4 +52,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/orders/{order}',   [OrderController::class, 'destroy'])->name('orders.destroy');
 });
 
+Route::post('/logos/upload-temp', [OrderController::class, 'uploadTemp']);
+
 require __DIR__.'/auth.php';

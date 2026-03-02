@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Logo as LogoModel;
+use App\Models\logo as LogoModel;
 use Illuminate\Database\Eloquent\Model;
 
 class LogoSection extends Model
