@@ -201,7 +201,33 @@
                         </div>
                         @endforeach
                     </div>
+<h3>اللوجوهات المستخدمة</h3>
 
+@if($order->logos && count($order->logos) > 0)
+    <div class="logos-grid">
+        @foreach($order->logos as $logo)
+            <div class="logo-card">
+                <img
+                    src="{{ $logo['src'] }}"
+                    alt="لوجو - {{ $logo['view'] }}"
+                    style="width:120px; height:120px; object-fit:contain; border:1px solid #ddd; border-radius:8px;"
+                >
+                <div class="logo-meta">
+                    <span>الوجه: {{ $logo['view'] }}</span>
+                    <span>الحجم: {{ $logo['width_percent'] }}%</span>
+                    <span>الموضع X: {{ $logo['x_percent'] }}%</span>
+                    <span>الموضع Y: {{ $logo['y_percent'] }}%</span>
+                    <span>الدوران: {{ $logo['rotation'] }}°</span>
+                </div>
+                <a href="{{ $logo['src'] }}" download target="_blank">
+                    تحميل الصورة
+                </a>
+            </div>
+        @endforeach
+    </div>
+@else
+    <p>لا توجد لوجوهات</p>
+@endif
                 </div>
             </div>
 

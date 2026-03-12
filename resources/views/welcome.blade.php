@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>DRAPE — مصمم 3D</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +20,7 @@
             --white:      #f5f5f0;
             --muted:      rgba(245,245,240,0.4);
             --danger:     #e05252;
-            --hoodie-bg:  #e8e4dc; /* ← لون خلفية الهودي */
+            --hoodie-bg:  #e8e4dc;
             --font-display: 'Bebas Neue', sans-serif;
             --font-body:    'Cairo', sans-serif;
             --sidebar-w:  300px;
@@ -62,10 +62,7 @@
             display: flex; flex-direction: column; overflow: hidden;
             position: relative; z-index: 10;
         }
-        .sb-header {
-            padding: 20px 22px 16px; border-bottom: 1px solid var(--border);
-            flex-shrink: 0; position: relative;
-        }
+        .sb-header { padding: 20px 22px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; position: relative; }
         .sb-brand { font-family: var(--font-display); font-size: 24px; letter-spacing: 0.12em; color: var(--white); margin-bottom: 2px; }
         .sb-brand span { color: var(--gold); }
         .sb-subtitle { font-size: 9px; letter-spacing: 0.3em; color: var(--muted); text-transform: uppercase; }
@@ -75,15 +72,12 @@
             border-radius: 20px; padding: 4px 12px; margin-top: 10px;
             font-size: 11px; color: var(--gold); letter-spacing: 0.1em;
         }
-
         .sb-body { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 14px 18px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
         .sb-body::-webkit-scrollbar { width: 3px; }
         .sb-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
         .sb-label { font-size: 9px; letter-spacing: 0.35em; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         .sb-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-        /* sections */
         .sections-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; margin-bottom: 14px; }
         .section-item {
             aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -111,7 +105,6 @@
         .logo-item:hover { border-color: var(--gold); filter: brightness(1.15); transform: scale(1.06); box-shadow: 0 0 14px var(--gold-glow); }
         .no-logos-msg { color: var(--muted); font-size: 11px; text-align: center; grid-column: 1/-1; padding: 10px 0; }
 
-        /* upload */
         .upload-logo-btn {
             width: 100%; padding: 9px; background: var(--surface); border: 1px dashed rgba(201,168,76,0.3);
             border-radius: 9px; color: var(--gold); font-family: var(--font-body); font-size: 11px;
@@ -120,7 +113,6 @@
         }
         .upload-logo-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
 
-        /* instructions */
         .instructions { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--surface); }
         .instruction-row { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); padding: 3px 0; line-height: 1.4; }
         .instruction-row:not(:last-child) { border-bottom: 1px solid var(--border); }
@@ -128,15 +120,19 @@
 
         /* ════ MAIN ════ */
         .main {
-            flex: 1; display: flex; flex-direction: column;
-            background: var(--ink); overflow: hidden;
-            /* محتاجين نحسب الارتفاع بدقة */
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--ink);
             height: 100vh;
+            overflow: hidden;
+            min-width: 0;
         }
 
         /* ════ TOP BAR ════ */
         .top-bar {
-            height: var(--topbar-h); flex-shrink: 0;
+            height: var(--topbar-h);
+            flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
             padding: 0 16px; border-bottom: 1px solid var(--border);
             gap: 5px; flex-wrap: nowrap; overflow-x: auto;
@@ -158,54 +154,44 @@
             flex-shrink: 0;
         }
 
-        /* ════ CANVAS ════ */
+        /* ════ CANVAS WRAP ════ */
         .canvas-wrap {
-            flex: 1; display: flex; align-items: center; justify-content: center;
-            padding: 20px; position: relative; overflow: hidden;
-            /* الارتفاع = 100vh - topbar - bottombar */
+            flex: 1;
             min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
         }
+
         .canvas-wrap::before, .canvas-wrap::after {
             content: ''; position: absolute; width: 40px; height: 40px;
             border-color: rgba(201,168,76,0.12); border-style: solid; pointer-events: none;
+            z-index: 0;
         }
         .canvas-wrap::before { top: 10px; right: 10px; border-width: 1px 1px 0 0; }
         .canvas-wrap::after  { bottom: 10px; left: 10px; border-width: 0 0 1px 1px; }
 
+        /* ════ HOODIE CONTAINER ════ */
         .hoodie-container {
-            /* يأخذ الحجم الأقصى المتاح مع الحفاظ على نسبة */
-            width: min(100%, calc(100vh - var(--topbar-h) - var(--bottombar-h) - 40px));
-            height: min(100%, calc(100vh - var(--topbar-h) - var(--bottombar-h) - 40px));
-            max-width: 520px; max-height: 520px;
+            width: min(calc(100vh - var(--topbar-h) - var(--bottombar-h) - 40px), calc(100% - 40px));
+            height: min(calc(100vh - var(--topbar-h) - var(--bottombar-h) - 40px), calc(100% - 40px));
+            max-width: 520px;
+            max-height: 520px;
             aspect-ratio: 1;
-            position: relative; border-radius: 20px; overflow: hidden;
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
             border: 1px solid rgba(201,168,76,0.12);
             background: var(--hoodie-bg);
             box-shadow: 0 0 0 1px rgba(201,168,76,0.05), 0 30px 60px rgba(0,0,0,0.5);
             transition: background 0.3s;
+            flex-shrink: 0;
         }
-        .hoodie-container.grid-view {
-            width: min(95vw, 900px); height: 75vh; max-width: none; max-height: none;
-            aspect-ratio: unset; overflow-y: auto; background: var(--ink-soft);
-        }
-        .hoodie-grid { display: none; grid-template-columns: repeat(2,1fr); gap: 12px; padding: 12px; }
-        .hoodie-container.grid-view .hoodie-grid { display: grid; }
-        .hoodie-container.grid-view .hoodie-wrapper { display: none; }
 
-        .grid-item {
-            position: relative; background: var(--hoodie-bg); border-radius: 10px;
-            overflow: hidden; border: 1px solid var(--border);
-            width: 100%; height: 0; padding-bottom: 100%; transition: background 0.3s;
-        }
-        .grid-item-content { position: absolute; inset: 0; }
-        .grid-item-label {
-            position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
-            background: var(--gold); color: var(--ink); padding: 3px 10px;
-            border-radius: 20px; font-size: 10px; font-weight: 700; z-index: 100;
-        }
-        .grid-item-content model-viewer { width: 100%; height: 100%; background-color: transparent; }
-        .grid-item-content .logos-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
-
+        /* ════ HOODIE WRAPPER ════ */
         .hoodie-wrapper { width: 100%; height: 100%; position: relative; }
         .hoodie-wrapper.drag-over::after {
             content: 'أفلت هنا'; position: absolute; inset: 0;
@@ -222,7 +208,7 @@
         }
         model-viewer::part(default-progress-bar) { height: 2px; background: var(--gold); }
 
-        .logos-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 10; border-radius: 18px; }
+        .logos-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
         .color-overlay { position: absolute; inset: 0; border-radius: 18px; pointer-events: none; z-index: 5; mix-blend-mode: multiply; opacity: 0; transition: opacity 0.3s; }
         .color-overlay.active { opacity: 0.45; }
 
@@ -233,7 +219,7 @@
         .logo-on-hoodie { position: absolute; pointer-events: auto; cursor: move; user-select: none; opacity: 0; transition: opacity 0.3s; }
         .logo-on-hoodie.active  { opacity: 1; }
         .logo-on-hoodie.selected { outline: 2px solid var(--gold); outline-offset: 3px; box-shadow: 0 0 16px var(--gold-glow); }
-        .logo-on-hoodie img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.35)); }
+        .logo-on-hoodie img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
         .logo-on-hoodie .delete-btn {
             position: absolute; top: -10px; right: -10px;
             background: var(--danger); color: #fff; border: 2px solid var(--ink);
@@ -258,9 +244,14 @@
 
         /* ════ BOTTOM BAR ════ */
         .bottom-bar {
-            height: var(--bottombar-h); flex-shrink: 0;
+            flex-shrink: 0;
+            height: var(--bottombar-h);
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 20px; border-top: 1px solid var(--border); gap: 10px;
+            background: var(--ink);
+            z-index: 10;
+            /* iPhone safe area */
+            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
         .status-hint { font-size: 11px; letter-spacing: 0.1em; color: var(--muted); white-space: nowrap; }
         .status-hint span { color: var(--gold); }
@@ -345,7 +336,6 @@
         .btn-submit:hover { box-shadow: 0 0 20px var(--gold-glow); }
         .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* export */
         .export-previews { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-top: 10px; }
         .export-preview-item { position: relative; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--hoodie-bg); }
         .export-preview-item img { width: 100%; display: block; }
@@ -358,7 +348,6 @@
         .success-msg p { color: var(--muted); font-size: 13px; }
         .success-msg strong { color: var(--gold); }
 
-        /* sidebar close btn (mobile) */
         .sidebar-close {
             display: none; position: absolute; top: 12px; left: 12px;
             width: 32px; height: 32px; background: var(--gold); border: none;
@@ -378,50 +367,130 @@
         @media (max-width: 768px) {
             :root {
                 --topbar-h:   46px;
-                --bottombar-h:56px;
+                --bottombar-h: 60px;
             }
             html, body { overflow: hidden; }
-            .app { flex-direction: column; height: 100vh; overflow: hidden; }
+            .app { flex-direction: column; height: 100dvh; overflow: hidden; }
 
-            /* sidebar كـ drawer */
             .sidebar {
                 position: fixed; right: 0; top: 0; bottom: 0;
                 width: min(300px, 85vw);
                 transform: translateX(100%);
                 transition: transform 0.3s ease;
                 z-index: 2000;
-                height: 100vh;
+                height: 100dvh;
             }
             .sidebar.open { transform: translateX(0); box-shadow: -10px 0 40px rgba(0,0,0,0.5); }
             .sidebar-toggle { display: flex; }
             .sidebar-close { display: flex; }
 
-            .main { height: 100vh; flex: 1; display: flex; flex-direction: column; }
+            .main {
+                height: 100dvh;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
 
-            /* canvas responsive */
-            .canvas-wrap { padding: 10px; }
+            .canvas-wrap {
+                display: flex;
+                flex: 1;
+                min-height: 0;
+                max-height: calc(100vh - var(--topbar-h) - var(--bottombar-h) - env(safe-area-inset-bottom, 0px));
+                padding: 10px;
+                overflow: hidden;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+            .canvas-wrap.grid-active {
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+            }
+
             .hoodie-container {
                 width: min(85vw, calc(100vh - var(--topbar-h) - var(--bottombar-h) - 20px));
                 height: min(85vw, calc(100vh - var(--topbar-h) - var(--bottombar-h) - 20px));
-                max-width: none; max-height: none;
+                max-width: none;
+                max-height: none;
             }
-            .hoodie-container.grid-view { width: 100%; height: auto; aspect-ratio: unset; }
-            .hoodie-grid { grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px; }
+
+            .hoodie-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+                padding: 4px !important;
+            }
 
             .top-bar { padding: 0 8px; gap: 3px; overflow-x: auto; }
             .view-btn { padding: 5px 9px; font-size: 10px; }
             .divider-dot { display: none; }
 
-            /* bottom bar mobile */
-            .bottom-bar { padding: 0 12px; }
+            /* bottom bar — دايمًا ظاهر */
+            .bottom-bar {
+                height: var(--bottombar-h) !important;
+                min-height: var(--bottombar-h);
+                flex-shrink: 0 !important;
+                padding: 0 12px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
             .status-hint { display: none; }
-            .bottom-actions { width: 100%; gap: 8px; }
-            .save-btn, .order-btn { flex: 1; text-align: center; padding: 9px 10px; font-size: 12px; }
+            .bottom-actions {
+                width: 100%;
+                display: flex !important;
+                gap: 8px;
+            }
+            .save-btn, .order-btn {
+                flex: 1;
+                text-align: center;
+                padding: 10px 8px;
+                font-size: 12px;
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                min-height: 42px;
+            }
         }
 
         @media (max-width: 400px) {
             .view-btn { padding: 4px 7px; font-size: 9px; }
-            .hoodie-grid { grid-template-columns: 1fr; }
+            .hoodie-grid { grid-template-columns: 1fr !important; }
+            .save-btn, .order-btn { font-size: 11px; }
+        }
+        /* ════ UPLOAD PROGRESS BAR ════ */
+        #uploadProgressBar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--border);
+            z-index: 999999;
+            display: none;
+        }
+        #uploadProgressFill {
+            height: 100%;
+            width: 0%;
+            background: var(--gold);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 8px var(--gold-glow);
+        }
+        #uploadProgressLabel {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--ink-soft);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            z-index: 999999;
+            display: none;
+            white-space: nowrap;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -444,7 +513,6 @@
             <div class="sb-subtitle">3D Product Designer</div>
             <div class="sb-product-badge"><span>👕</span> هودي كلاسيك</div>
         </div>
-
         <div class="sb-body">
             <div class="sb-label">أقسام اللوجوهات</div>
             <div class="sections-grid" id="sectionsGrid">
@@ -494,14 +562,13 @@
             <div class="divider-dot"></div>
             <button class="view-btn" data-view="right">يمين</button>
             <div class="divider-dot"></div>
-            <button class="view-btn" id="gridViewBtn">عرض الكل</button>
-            <div class="divider-dot"></div>
             <button class="view-btn" id="freeControlBtn">تحكم حر</button>
             <div class="divider-dot"></div>
             <button class="view-btn" id="previewBtn">معاينة</button>
         </div>
 
-        <div class="canvas-wrap">
+        <div class="canvas-wrap" id="canvasWrap">
+            <!-- الهودي العادي — ما بيتغيرش خالص -->
             <div class="hoodie-container" id="hoodieContainer">
                 <div class="hoodie-wrapper" id="hoodieWrapper">
                     <model-viewer
@@ -520,33 +587,10 @@
                     <div class="color-overlay" id="colorOverlay"></div>
                     <div class="logos-overlay" id="logosOverlay"></div>
                 </div>
-
-                <div class="hoodie-grid" id="hoodieGrid">
-                    <div class="grid-item"><div class="grid-item-content">
-                        <div class="grid-item-label">الوش</div>
-                        <model-viewer id="gridModelFront" src="assets/img/3ds/t_shirt_hoodie_3d_model.glb" poster="assets/img/3ds/hoodie_poster.webp" camera-orbit="0deg 75deg 105%" min-camera-orbit="0deg 75deg 105%" max-camera-orbit="0deg 75deg 105%" field-of-view="30deg" disable-zoom disable-pan disable-tap interaction-prompt="none" ar-modes=""></model-viewer>
-                        <div class="logos-overlay" id="gridOverlayFront"></div>
-                    </div></div>
-                    <div class="grid-item"><div class="grid-item-content">
-                        <div class="grid-item-label">الظهر</div>
-                        <model-viewer id="gridModelBack" src="assets/img/3ds/t_shirt_hoodie_3d_model.glb" poster="assets/img/3ds/hoodie_poster.webp" camera-orbit="180deg 75deg 105%" min-camera-orbit="180deg 75deg 105%" max-camera-orbit="180deg 75deg 105%" field-of-view="30deg" disable-zoom disable-pan disable-tap interaction-prompt="none" ar-modes=""></model-viewer>
-                        <div class="logos-overlay" id="gridOverlayBack"></div>
-                    </div></div>
-                    <div class="grid-item"><div class="grid-item-content">
-                        <div class="grid-item-label">يسار</div>
-                        <model-viewer id="gridModelLeft" src="assets/img/3ds/t_shirt_hoodie_3d_model.glb" poster="assets/img/3ds/hoodie_poster.webp" camera-orbit="90deg 75deg 105%" min-camera-orbit="90deg 75deg 105%" max-camera-orbit="90deg 75deg 105%" field-of-view="30deg" disable-zoom disable-pan disable-tap interaction-prompt="none" ar-modes=""></model-viewer>
-                        <div class="logos-overlay" id="gridOverlayLeft"></div>
-                    </div></div>
-                    <div class="grid-item"><div class="grid-item-content">
-                        <div class="grid-item-label">يمين</div>
-                        <model-viewer id="gridModelRight" src="assets/img/3ds/t_shirt_hoodie_3d_model.glb" poster="assets/img/3ds/hoodie_poster.webp" camera-orbit="-90deg 75deg 105%" min-camera-orbit="-90deg 75deg 105%" max-camera-orbit="-90deg 75deg 105%" field-of-view="30deg" disable-zoom disable-pan disable-tap interaction-prompt="none" ar-modes=""></model-viewer>
-                        <div class="logos-overlay" id="gridOverlayRight"></div>
-                    </div></div>
-                </div>
             </div>
+
         </div>
 
-        <!-- BOTTOM BAR — الآن داخل .main فيظهر صح دايمًا -->
         <div class="bottom-bar">
             <div class="status-hint">اضغط على اللوجو لـ <span>أدوات التحكم</span></div>
             <div class="bottom-actions">
@@ -619,11 +663,12 @@
     </div>
 </div>
 
+<!-- UPLOAD PROGRESS -->
+<div id="uploadProgressBar"><div id="uploadProgressFill"></div></div>
+<div id="uploadProgressLabel">جاري المعالجة...</div>
+
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 <script>
-/* ════════════════════════════════════════════
-   بيانات الأقسام من DB
-════════════════════════════════════════════ */
 const SECTIONS_DATA = {
     @foreach($sections as $section)
     {{ $section->id }}: {
@@ -636,19 +681,18 @@ const SECTIONS_DATA = {
 
 const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-/* ════ REFS ════ */
 const modelViewer     = document.getElementById('hoodieModel');
 const hoodieWrapper   = document.getElementById('hoodieWrapper');
 const logosOverlay    = document.getElementById('logosOverlay');
 const colorOverlay    = document.getElementById('colorOverlay');
 const viewButtons     = document.querySelectorAll('.view-btn[data-view]');
 const hoodieContainer = document.getElementById('hoodieContainer');
+const canvasWrap      = document.getElementById('canvasWrap');
 const logoToolbar     = document.getElementById('logoToolbar');
 
-/* ════ STATE ════ */
 let currentView       = 'front';
 let logoCounter       = 0;
-let isPreviewMode     = false, isFreeControlMode = false, isGridView = false;
+let isPreviewMode     = false, isFreeControlMode = false;
 let previewInterval   = null;
 let dragPreview       = null, isDraggingFromSidebar = false, currentDragSource = null;
 let selectedLogo      = null, selectedLogoData = null;
@@ -680,7 +724,6 @@ modelViewer.addEventListener('load', () => {
     lsBar.style.width = '100%'; lsPct.textContent = '100%';
     setTimeout(() => document.getElementById('loadingScreen').classList.add('hidden'), 500);
     modelViewer.cameraOrbit = cameraViews.front;
-    setTimeout(syncGridCameraSettings, 600);
 });
 setTimeout(() => {
     const ls = document.getElementById('loadingScreen');
@@ -704,7 +747,6 @@ viewButtons.forEach(btn => btn.addEventListener('click', function () {
 
 document.getElementById('freeControlBtn').addEventListener('click', () => isFreeControlMode ? stopFreeControl() : startFreeControl());
 document.getElementById('previewBtn').addEventListener('click', () => isPreviewMode ? stopPreview() : startPreview());
-document.getElementById('gridViewBtn').addEventListener('click', () => isGridView ? stopGridView() : startGridView());
 
 function startFreeControl() {
     if (isPreviewMode) stopPreview();
@@ -749,50 +791,6 @@ function stopPreview() {
     if (previewInterval) { clearInterval(previewInterval); previewInterval = null; }
     updateVisibleLogos();
 }
-function startGridView() {
-    if (isPreviewMode) stopPreview();
-    if (isFreeControlMode) stopFreeControl();
-    deselectLogo();
-    isGridView = true;
-    document.getElementById('gridViewBtn').textContent = 'رجوع';
-    document.getElementById('gridViewBtn').classList.add('active');
-    hoodieContainer.classList.add('grid-view');
-    syncLogosToGrid();
-    viewButtons.forEach(b => b.classList.remove('active'));
-}
-function stopGridView() {
-    isGridView = false;
-    document.getElementById('gridViewBtn').textContent = 'عرض الكل';
-    document.getElementById('gridViewBtn').classList.remove('active');
-    hoodieContainer.classList.remove('grid-view');
-    viewButtons.forEach(b => { if (b.dataset.view === currentView) b.classList.add('active'); });
-}
-function syncLogosToGrid() {
-    ['Front','Back','Left','Right'].forEach(v => {
-        const el = document.getElementById(`gridOverlay${v}`);
-        if (el) el.innerHTML = '';
-    });
-    Object.keys(logosByView).forEach(view => {
-        const overlay = document.getElementById(`gridOverlay${view.charAt(0).toUpperCase()+view.slice(1)}`);
-        if (!overlay) return;
-        logosByView[view].forEach(d => {
-            const el = document.createElement('div');
-            el.className = 'logo-on-hoodie active';
-            el.style.cssText = `left:${d.xPercent}%;top:${d.yPercent}%;width:${d.widthPercent}%;height:${d.heightPercent}%;transform:rotate(${d.rotation}deg);pointer-events:none;`;
-            const img = document.createElement('img'); img.src = d.src; img.draggable = false;
-            el.appendChild(img); overlay.appendChild(el);
-        });
-    });
-}
-function syncGridCameraSettings() {
-    try {
-        const t = modelViewer.getCameraTarget();
-        ['Front','Back','Left','Right'].forEach(v => {
-            const m = document.getElementById(`gridModel${v}`);
-            if (m) { m.cameraTarget = `${t.x}m ${t.y}m ${t.z}m`; m.fieldOfView = modelViewer.fieldOfView; }
-        });
-    } catch(e) {}
-}
 
 modelViewer.addEventListener('camera-change', () => {
     if (!isFreeControlMode) return;
@@ -801,6 +799,26 @@ modelViewer.addEventListener('camera-change', () => {
     const v = deg >= 315 || deg < 45 ? 'front' : deg < 135 ? 'right' : deg < 225 ? 'back' : 'left';
     if (v !== currentView) { currentView = v; updateVisibleLogos(); }
 });
+
+/* ════ SIDEBAR SWIPE TO CLOSE ════ */
+(function() {
+    const sidebar = document.getElementById('sidebar');
+    let startX = 0, startY = 0, isSwiping = false;
+    sidebar.addEventListener('touchstart', e => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        isSwiping = false;
+    }, { passive: true });
+    sidebar.addEventListener('touchmove', e => {
+        const dx = e.touches[0].clientX - startX;
+        const dy = Math.abs(e.touches[0].clientY - startY);
+        if (!isSwiping && Math.abs(dx) > 10 && dy < 40) isSwiping = true;
+        if (isSwiping && dx > 40) {
+            sidebar.classList.remove('open');
+            isSwiping = false;
+        }
+    }, { passive: true });
+})();
 
 /* ════ TOOLBAR ════ */
 document.getElementById('rotateCCW').addEventListener('click', () => { if (!selectedLogoData) return; selectedLogoData.rotation=(selectedLogoData.rotation||0)-15; selectedLogo.style.transform=`rotate(${selectedLogoData.rotation}deg)`; });
@@ -946,76 +964,172 @@ function addLogoToGrid(src, grid) {
     img.src=src; img.className='logo-item'; img.alt='Logo'; img.draggable=true;
     img.addEventListener('dragstart', e=>{ currentDragSource=img; e.dataTransfer.effectAllowed='copy'; e.dataTransfer.setData('text/plain',src); document.getElementById('sidebar').classList.remove('open'); });
     img.addEventListener('dragend', ()=>currentDragSource=null);
-    let timer=null;
-    img.addEventListener('touchstart', e=>{ const t=e.touches[0],sx=t.clientX,sy=t.clientY; timer=setTimeout(()=>{ isDraggingFromSidebar=true; document.body.style.overflow='hidden'; currentDragSource=img; dragPreview=document.createElement('img'); dragPreview.src=src; dragPreview.className='drag-preview'; dragPreview.style.left=sx-32+'px'; dragPreview.style.top=sy-32+'px'; document.body.appendChild(dragPreview); document.getElementById('sidebar').classList.remove('open'); },150); },{passive:true});
-    img.addEventListener('touchend', ()=>{ if(timer){clearTimeout(timer);timer=null;} },{passive:true});
-    img.addEventListener('touchmove', e=>{ if(!isDraggingFromSidebar&&timer){ clearTimeout(timer);timer=null; const t=e.touches[0]; isDraggingFromSidebar=true; document.body.style.overflow='hidden'; currentDragSource=img; dragPreview=document.createElement('img'); dragPreview.src=src; dragPreview.className='drag-preview'; dragPreview.style.left=t.clientX-32+'px'; dragPreview.style.top=t.clientY-32+'px'; document.body.appendChild(dragPreview); document.getElementById('sidebar').classList.remove('open'); } },{passive:true});
+
+    // نقرة بسيطة = يضيف اللوجو في المنتصف مباشرة
+    img.addEventListener('click', () => {
+        const r = hoodieWrapper.getBoundingClientRect();
+        addLogo(src, r.width / 2, r.height / 2);
+        document.getElementById('sidebar').classList.remove('open');
+        showToast('تم إضافة اللوجو في المنتصف ✓');
+    });
+
+    let timer=null, touchMoved=false;
+    img.addEventListener('touchstart', e=>{ 
+        touchMoved = false;
+        const t=e.touches[0],sx=t.clientX,sy=t.clientY; 
+        timer=setTimeout(()=>{ 
+            isDraggingFromSidebar=true; document.body.style.overflow='hidden'; currentDragSource=img; 
+            dragPreview=document.createElement('img'); dragPreview.src=src; dragPreview.className='drag-preview'; 
+            dragPreview.style.left=sx-32+'px'; dragPreview.style.top=sy-32+'px'; document.body.appendChild(dragPreview); 
+            document.getElementById('sidebar').classList.remove('open'); 
+        },150); 
+    },{passive:true});
+    img.addEventListener('touchmove', e=>{ 
+        touchMoved = true;
+        if(!isDraggingFromSidebar&&timer){ 
+            clearTimeout(timer);timer=null; const t=e.touches[0]; isDraggingFromSidebar=true; 
+            document.body.style.overflow='hidden'; currentDragSource=img; 
+            dragPreview=document.createElement('img'); dragPreview.src=src; dragPreview.className='drag-preview'; 
+            dragPreview.style.left=t.clientX-32+'px'; dragPreview.style.top=t.clientY-32+'px'; 
+            document.body.appendChild(dragPreview); document.getElementById('sidebar').classList.remove('open'); 
+        } 
+    },{passive:true});
+    img.addEventListener('touchend', e=>{ 
+        if(timer){clearTimeout(timer);timer=null;} 
+        // لو مسحبش، نضيف في المنتصف
+        if(!isDraggingFromSidebar && !touchMoved) {
+            const r = hoodieWrapper.getBoundingClientRect();
+            addLogo(src, r.width / 2, r.height / 2);
+            document.getElementById('sidebar').classList.remove('open');
+            showToast('تم إضافة اللوجو في المنتصف ✓');
+        }
+    },{passive:true});
     grid.appendChild(img);
 }
 
-/* ════ UPLOAD LOGO — يرفع للسيرفر فوراً ويضاف للـ grid ════ */
-function handleLogoUpload(input) {
+/* ════ UPLOAD PROGRESS ════ */
+function showProgress(pct, label) {
+    const bar   = document.getElementById('uploadProgressBar');
+    const fill  = document.getElementById('uploadProgressFill');
+    const lbl   = document.getElementById('uploadProgressLabel');
+    bar.style.display  = 'block';
+    lbl.style.display  = 'block';
+    fill.style.width   = pct + '%';
+    lbl.textContent    = label;
+}
+function hideProgress() {
+    const bar  = document.getElementById('uploadProgressBar');
+    const fill = document.getElementById('uploadProgressFill');
+    const lbl  = document.getElementById('uploadProgressLabel');
+    fill.style.width = '100%';
+    setTimeout(() => {
+        bar.style.display = 'none';
+        lbl.style.display = 'none';
+        fill.style.width  = '0%';
+    }, 500);
+}
+
+/* ════ UPLOAD LOGO ════ */
+async function handleLogoUpload(input) {
     const file = input.files[0]; if (!file) return;
+    input.value = "";
 
-    // اعرض loading toast
-    showToast('جاري رفع الصورة...');
-
-    // ارفع بـ FormData مباشرة (أسرع وأضمن من base64)
-    const formData = new FormData();
-    formData.append('image', file);
-
-    fetch('/logos/upload-temp', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': CSRF_TOKEN,
-            'Accept': 'application/json',
-        },
-        body: formData
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (!data.url) throw new Error(data.error || 'فشل الرفع');
-
-        const serverUrl = data.url; // URL حقيقي على السيرفر
-        uploadedLogos.push(serverUrl);
-
-        const grid = document.getElementById('logoGrid');
-        if (!currentSectionId) {
-            document.getElementById('selectedSectionName').textContent = 'مرفوعاتي';
-            grid.innerHTML = '';
-            uploadedLogos.forEach(s => addLogoToGrid(s, grid));
-            document.getElementById('logosPanel').classList.add('open');
-        } else {
-            const noMsg = grid.querySelector('.no-logos-msg');
-            if (noMsg) noMsg.remove();
-            addLogoToGrid(serverUrl, grid);
-        }
-        showToast('تم رفع اللوجو ✓ اسحبه على الهودي');
-    })
-    .catch(err => {
-        console.error('Upload error:', err);
-        // Fallback: استخدم base64 مؤقتاً لو السيرفر فشل
-        const reader = new FileReader();
-        reader.onload = e => {
-            const src = e.target.result;
-            uploadedLogos.push(src);
-            const grid = document.getElementById('logoGrid');
-            if (!currentSectionId) {
-                document.getElementById('selectedSectionName').textContent = 'مرفوعاتي';
-                grid.innerHTML = '';
-                uploadedLogos.forEach(s => addLogoToGrid(s, grid));
-                document.getElementById('logosPanel').classList.add('open');
-            } else {
-                const noMsg = grid.querySelector('.no-logos-msg');
-                if (noMsg) noMsg.remove();
-                addLogoToGrid(src, grid);
-            }
-            showToast('تم إضافة اللوجو (محلي) ✓ اسحبه على الهودي');
-        };
-        reader.readAsDataURL(file);
+    // اقرأ الصورة الأصلية كـ base64 أولاً (fallback جاهز دايماً)
+    const originalBase64 = await new Promise(res => {
+        const r = new FileReader();
+        r.onload = e => res(e.target.result);
+        r.readAsDataURL(file);
     });
 
-    input.value = '';
+    showProgress(10, 'جاري تحميل الـ AI...');
+
+    let finalSrc = originalBase64; // fallback افتراضي
+
+    try {
+        const { removeBackground } = await import("https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/+esm");
+        showProgress(20, 'جاري إزالة الخلفية...');
+
+        const blob = await removeBackground(file, {
+            progress: (key, current, total) => {
+                if (key === "compute:inference" && total > 0) {
+                    const pct = 20 + Math.round((current / total) * 65);
+                    showProgress(pct, 'جاري المعالجة ' + Math.round((current / total) * 100) + '%');
+                }
+            }
+        });
+
+        // تحقق إن الـ blob صالح وفيه حجم
+        if (blob && blob.size > 1000) {
+            finalSrc = await new Promise(res => {
+                const r = new FileReader();
+                r.onload = e => res(e.target.result);
+                r.readAsDataURL(blob);
+            });
+            showProgress(88, 'تمت إزالة الخلفية ✓');
+        } else {
+            showProgress(88, 'جاري الرفع...');
+        }
+    } catch(e) {
+        console.warn("bg removal failed:", e);
+        showProgress(88, 'جاري الرفع...');
+    }
+
+    // رفع للسيرفر (اختياري — الصورة موجودة كـ base64 حتى لو فشل)
+    showProgress(92, 'جاري الرفع...');
+
+    try {
+        const res = await fetch("/logos/upload-temp", {
+            method: "POST",
+            headers: { "X-CSRF-TOKEN": CSRF_TOKEN, "Accept": "application/json" },
+            body: (() => {
+                const fd = new FormData();
+                // حوّل الـ base64 لـ blob للرفع
+                const arr = finalSrc.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8 = new Uint8Array(n);
+                while(n--) u8[n] = bstr.charCodeAt(n);
+                fd.append("image", new Blob([u8], {type: mime}), "logo.png");
+                return fd;
+            })()
+        });
+        const data = await res.json();
+        if (data.url) {
+            // استخدم URL نسبي بدل absolute عشان يشتغل على أي سيرفر
+            try {
+                const urlPath = new URL(data.url).pathname;
+                finalSrc = urlPath;
+            } catch {
+                finalSrc = data.url;
+            }
+        }
+    } catch(e) {
+        // مش مشكلة — هنستخدم الـ base64
+    }
+
+    showProgress(100, 'تم ✓');
+    hideProgress();
+
+    const r = hoodieWrapper.getBoundingClientRect();
+    addLogo(finalSrc, r.width / 2, r.height / 2);
+    document.getElementById('sidebar').classList.remove('open');
+    addUploadedLogo(finalSrc);
+}
+
+function addUploadedLogo(src) {
+    uploadedLogos.push(src);
+    const grid = document.getElementById('logoGrid');
+    if (!currentSectionId) {
+        document.getElementById('selectedSectionName').textContent = 'مرفوعاتي';
+        grid.innerHTML = '';
+        uploadedLogos.forEach(s => addLogoToGrid(s, grid));
+        document.getElementById('logosPanel').classList.add('open');
+    } else {
+        const noMsg = grid.querySelector('.no-logos-msg');
+        if (noMsg) noMsg.remove();
+        addLogoToGrid(src, grid);
+    }
 }
 
 function showToast(msg) {
@@ -1026,7 +1140,7 @@ function showToast(msg) {
     setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(),400); }, 2200);
 }
 
-/* ════ EXPORT 4 IMAGES — باستخدام model-viewer toBlob ════ */
+/* ════ EXPORT ════ */
 function openExportModal() {
     document.getElementById('exportPreviews').innerHTML = '';
     document.getElementById('exportLoading').style.display = 'none';
@@ -1041,18 +1155,14 @@ async function generateExportImages() {
     btn.disabled = true; btn.textContent = 'جاري الالتقاط...';
     document.getElementById('exportLoading').style.display = 'block';
     document.getElementById('exportPreviews').innerHTML = '';
-
     const viewConfigs = [
         { key:'front', label:'الوش',  orbit:'0deg 75deg 105%' },
         { key:'back',  label:'الظهر', orbit:'180deg 75deg 105%' },
         { key:'left',  label:'يسار',  orbit:'90deg 75deg 105%' },
         { key:'right', label:'يمين',  orbit:'-90deg 75deg 105%' },
     ];
-
-    // ═══ Step 1: التقط 4 صور ═══
     const captured = [];
     logosOverlay.style.display = 'none';
-
     for (const vc of viewConfigs) {
         modelViewer.cameraOrbit = vc.orbit;
         await new Promise(r => setTimeout(r, 700));
@@ -1064,250 +1174,119 @@ async function generateExportImages() {
             captured.push({ ...vc, dataUrl: null });
         }
     }
-
-    // أعِد الكاميرا والـ overlay
     modelViewer.cameraOrbit = cameraViews[currentView];
     logosOverlay.style.display = '';
     updateVisibleLogos();
-
-    // ═══ Step 2: ارسم اللوجوهات على كل صورة ═══
     const composited = [];
     for (const item of captured) {
         if (!item.dataUrl) { composited.push({ ...item, dataUrl: null }); continue; }
         try {
             const finalUrl = await compositeLogoOnImage(item.dataUrl, item.key);
             composited.push({ ...item, dataUrl: finalUrl });
-        } catch(e) {
-            composited.push(item);
-        }
+        } catch(e) { composited.push(item); }
     }
-
-    // ═══ Step 3: ادمج الـ 4 في صورة واحدة 2×2 ═══
-    const CELL = 800; // حجم كل خلية بالبكسل
-    const GAP  = 12;  // مسافة بين الخلايا
-    const LABEL_H = 40; // ارتفاع اللابل تحت كل صورة
-    const PADDING = 20;
-    const COLS = 2, ROWS = 2;
-
-    const totalW = COLS * CELL + (COLS - 1) * GAP + PADDING * 2;
-    const totalH = ROWS * (CELL + LABEL_H) + (ROWS - 1) * GAP + PADDING * 2 + 50; // 50 للـ header
-
+    const CELL=800, GAP=12, LABEL_H=40, PADDING=20, COLS=2, ROWS=2;
+    const totalW = COLS*CELL+(COLS-1)*GAP+PADDING*2;
+    const totalH = ROWS*(CELL+LABEL_H)+(ROWS-1)*GAP+PADDING*2+50;
     const finalCanvas = document.createElement('canvas');
-    finalCanvas.width  = totalW;
-    finalCanvas.height = totalH;
+    finalCanvas.width=totalW; finalCanvas.height=totalH;
     const ctx = finalCanvas.getContext('2d');
-
-    // خلفية
-    ctx.fillStyle = '#0a0a0a';
-    ctx.fillRect(0, 0, totalW, totalH);
-
-    // Header "DRAPE Design"
-    ctx.fillStyle = '#c9a84c';
-    ctx.font = 'bold 28px "Bebas Neue", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.letterSpacing = '4px';
-    ctx.fillText('DRAPE — تصميم الهودي', totalW / 2, PADDING + 28);
-
-    // ارسم كل خلية
-    const positions = [
-        { col: 0, row: 0 }, // front
-        { col: 1, row: 0 }, // back
-        { col: 0, row: 1 }, // left
-        { col: 1, row: 1 }, // right
-    ];
-
-    await Promise.all(composited.map((item, i) => new Promise(resolve => {
-        const { col, row } = positions[i];
-        const x = PADDING + col * (CELL + GAP);
-        const y = PADDING + 50 + row * (CELL + LABEL_H + GAP);
-
-        // خلفية الخلية (لون الهودي)
-        ctx.fillStyle = '#e8e4dc';
-        ctx.beginPath();
-        ctx.roundRect(x, y, CELL, CELL, 12);
-        ctx.fill();
-
-        // لابل الوجه (أعلى الخلية)
-        ctx.fillStyle = '#c9a84c';
-        ctx.beginPath();
-        ctx.roundRect(x + CELL/2 - 40, y + 8, 80, 26, 13);
-        ctx.fill();
-        ctx.fillStyle = '#0a0a0a';
-        ctx.font = 'bold 14px Cairo, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(item.label, x + CELL/2, y + 26);
-
-        if (!item.dataUrl) {
-            ctx.fillStyle = 'rgba(255,255,255,0.15)';
-            ctx.font = '14px Cairo, sans-serif';
-            ctx.fillText('تعذّر الالتقاط', x + CELL/2, y + CELL/2);
-            resolve(); return;
-        }
-
-        const img = new Image();
-        img.onload = () => {
-            ctx.save();
-            ctx.beginPath();
-            ctx.roundRect(x, y, CELL, CELL, 12);
-            ctx.clip();
-            ctx.drawImage(img, x, y, CELL, CELL);
-            ctx.restore();
-            resolve();
-        };
-        img.onerror = () => resolve();
-        img.src = item.dataUrl;
+    ctx.fillStyle='#0a0a0a'; ctx.fillRect(0,0,totalW,totalH);
+    ctx.fillStyle='#c9a84c'; ctx.font='bold 28px "Bebas Neue",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('DRAPE — تصميم الهودي', totalW/2, PADDING+28);
+    const positions=[{col:0,row:0},{col:1,row:0},{col:0,row:1},{col:1,row:1}];
+    await Promise.all(composited.map((item,i)=>new Promise(resolve=>{
+        const {col,row}=positions[i];
+        const x=PADDING+col*(CELL+GAP), y=PADDING+50+row*(CELL+LABEL_H+GAP);
+        ctx.fillStyle='#e8e4dc'; ctx.beginPath(); ctx.roundRect(x,y,CELL,CELL,12); ctx.fill();
+        ctx.fillStyle='#c9a84c'; ctx.beginPath(); ctx.roundRect(x+CELL/2-40,y+8,80,26,13); ctx.fill();
+        ctx.fillStyle='#0a0a0a'; ctx.font='bold 14px Cairo,sans-serif'; ctx.textAlign='center';
+        ctx.fillText(item.label, x+CELL/2, y+26);
+        if(!item.dataUrl){resolve();return;}
+        const img=new Image();
+        img.onload=()=>{ ctx.save(); ctx.beginPath(); ctx.roundRect(x,y,CELL,CELL,12); ctx.clip(); ctx.drawImage(img,x,y,CELL,CELL); ctx.restore(); resolve(); };
+        img.onerror=()=>resolve(); img.src=item.dataUrl;
     })));
-
-    // Footer
-    ctx.fillStyle = 'rgba(201,168,76,0.3)';
-    ctx.fillRect(PADDING, totalH - 28, totalW - PADDING * 2, 1);
-    ctx.fillStyle = 'rgba(201,168,76,0.6)';
-    ctx.font = '12px Cairo, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('DRAPE — 3D Product Designer', totalW / 2, totalH - 10);
-
-    const finalDataUrl = finalCanvas.toDataURL('image/png');
-
-    // ═══ Step 4: عرض Preview ═══
-    document.getElementById('exportLoading').style.display = 'none';
-    const previewsEl = document.getElementById('exportPreviews');
-    previewsEl.style.gridTemplateColumns = '1fr'; // صورة واحدة عرض كامل
-    const wrap = document.createElement('div');
-    wrap.className = 'export-preview-item';
-    wrap.style.background = '#0a0a0a';
-    const prevImg = document.createElement('img');
-    prevImg.src = finalDataUrl;
-    prevImg.style.cssText = 'width:100%;display:block;border-radius:8px;';
-    wrap.appendChild(prevImg);
-    previewsEl.appendChild(wrap);
-
-    window._exportFinalImage = finalDataUrl;
-
-    // ═══ Step 5: زرار التحميل ═══
-    const footerEl = document.getElementById('exportModalFooter');
-    footerEl.innerHTML = '';
-    const _closeBtn = document.createElement('button');
-    _closeBtn.className = 'btn-cancel';
-    _closeBtn.textContent = 'إغلاق';
-    _closeBtn.onclick = () => closeModal('exportModal');
-    const _dlBtn = document.createElement('button');
-    _dlBtn.className = 'btn-submit';
-    _dlBtn.textContent = '⬇️ تحميل الصورة';
-    _dlBtn.onclick = () => {
-        const a = document.createElement('a');
-        a.href = window._exportFinalImage;
-        a.download = 'drape-design.png';
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    };
-    footerEl.appendChild(_closeBtn);
-    footerEl.appendChild(_dlBtn);
+    ctx.fillStyle='rgba(201,168,76,0.3)'; ctx.fillRect(PADDING,totalH-28,totalW-PADDING*2,1);
+    ctx.fillStyle='rgba(201,168,76,0.6)'; ctx.font='12px Cairo,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('DRAPE — 3D Product Designer',totalW/2,totalH-10);
+    const finalDataUrl=finalCanvas.toDataURL('image/png');
+    document.getElementById('exportLoading').style.display='none';
+    const previewsEl=document.getElementById('exportPreviews');
+    previewsEl.style.gridTemplateColumns='1fr';
+    const wrap=document.createElement('div'); wrap.className='export-preview-item'; wrap.style.background='#0a0a0a';
+    const prevImg=document.createElement('img'); prevImg.src=finalDataUrl; prevImg.style.cssText='width:100%;display:block;border-radius:8px;';
+    wrap.appendChild(prevImg); previewsEl.appendChild(wrap);
+    window._exportFinalImage=finalDataUrl;
+    const footerEl=document.getElementById('exportModalFooter');
+    footerEl.innerHTML='';
+    const _c=document.createElement('button'); _c.className='btn-cancel'; _c.textContent='إغلاق'; _c.onclick=()=>closeModal('exportModal');
+    const _d=document.createElement('button'); _d.className='btn-submit'; _d.textContent='⬇️ تحميل الصورة';
+    _d.onclick=()=>{ const a=document.createElement('a'); a.href=window._exportFinalImage; a.download='drape-design.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a); };
+    footerEl.appendChild(_c); footerEl.appendChild(_d);
 }
 
-/* رسم اللوجوهات فوق صورة الـ model-viewer */
 async function compositeLogoOnImage(bgDataUrl, viewKey) {
     return new Promise((resolve) => {
-        const canvas = document.createElement('canvas');
-        const size = 800;
-        canvas.width = size; canvas.height = size;
-        const ctx = canvas.getContext('2d');
-
-        const bg = new Image();
-        bg.crossOrigin = 'anonymous';
-        bg.onload = async () => {
-            ctx.drawImage(bg, 0, 0, size, size);
-            const logos = logosByView[viewKey] || [];
-            for (const d of logos) {
-                await new Promise(rLogo => {
-                    const lImg = new Image();
-                    lImg.crossOrigin = 'anonymous';
-                    lImg.onload = () => {
-                        ctx.save();
-                        const lx = (d.xPercent / 100) * size;
-                        const ly = (d.yPercent / 100) * size;
-                        const lw = (d.widthPercent / 100) * size;
-                        const lh = (d.heightPercent / 100) * size;
-                        const cx = lx + lw/2, cy = ly + lh/2;
-                        ctx.translate(cx, cy);
-                        ctx.rotate((d.rotation||0) * Math.PI/180);
-                        ctx.drawImage(lImg, -lw/2, -lh/2, lw, lh);
-                        ctx.restore();
-                        rLogo();
-                    };
-                    lImg.onerror = () => rLogo();
-                    lImg.src = d.src;
+        const canvas=document.createElement('canvas'); const size=800;
+        canvas.width=size; canvas.height=size;
+        const ctx=canvas.getContext('2d');
+        const bg=new Image(); bg.crossOrigin='anonymous';
+        bg.onload=async()=>{
+            ctx.drawImage(bg,0,0,size,size);
+            const logos=logosByView[viewKey]||[];
+            for(const d of logos){
+                await new Promise(rLogo=>{
+                    const lImg=new Image(); lImg.crossOrigin='anonymous';
+                    lImg.onload=()=>{ ctx.save(); const lx=(d.xPercent/100)*size,ly=(d.yPercent/100)*size,lw=(d.widthPercent/100)*size,lh=(d.heightPercent/100)*size,cx=lx+lw/2,cy=ly+lh/2; ctx.translate(cx,cy); ctx.rotate((d.rotation||0)*Math.PI/180); ctx.drawImage(lImg,-lw/2,-lh/2,lw,lh); ctx.restore(); rLogo(); };
+                    lImg.onerror=()=>rLogo(); lImg.src=d.src;
                 });
             }
             resolve(canvas.toDataURL('image/png'));
         };
-        bg.onerror = () => resolve(bgDataUrl);
-        bg.src = bgDataUrl;
+        bg.onerror=()=>resolve(bgDataUrl); bg.src=bgDataUrl;
     });
 }
 
 function blobToDataUrl(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
+    return new Promise((resolve,reject)=>{ const reader=new FileReader(); reader.onload=e=>resolve(e.target.result); reader.onerror=reject; reader.readAsDataURL(blob); });
 }
 
 /* ════ ORDER ════ */
 function openOrderModal() {
-    const all = Object.values(logosByView).flat();
-    if (!all.length) { showToast('من فضلك ضيف لوجو الأول!'); return; }
+    const all=Object.values(logosByView).flat();
+    if(!all.length){showToast('من فضلك ضيف لوجو الأول!');return;}
     document.getElementById('orderModal').classList.add('open');
 }
 
 async function submitOrder() {
-    const name    = document.getElementById('orderName').value.trim();
-    const phone   = document.getElementById('orderPhone').value.trim();
-    const address = document.getElementById('orderAddress').value.trim();
-    const size    = document.getElementById('orderSize').value;
-    if (!name||!phone||!address||!size) { showToast('من فضلك املأ كل الحقول'); return; }
-
-    const btn = document.getElementById('submitOrderBtn');
-    document.getElementById('submitBtnText').style.display = 'none';
-    document.getElementById('submitBtnLoader').style.display = '';
-    btn.disabled = true;
-
-    // اللوجوهات اتحفظت على السيرفر بالفعل وقت الرفع — بس نجمع البيانات
-    const logosData = Object.values(logosByView).flat().map(l => ({
-        src:            l.src,  // دايمًا URL حقيقي (اترفع مسبقاً)
-        view:           l.view,
-        x_percent:      parseFloat(l.xPercent.toFixed(2)),
-        y_percent:      parseFloat(l.yPercent.toFixed(2)),
-        width_percent:  parseFloat(l.widthPercent.toFixed(2)),
-        height_percent: parseFloat(l.heightPercent.toFixed(2)),
-        rotation:       l.rotation || 0
+    const name=document.getElementById('orderName').value.trim();
+    const phone=document.getElementById('orderPhone').value.trim();
+    const address=document.getElementById('orderAddress').value.trim();
+    const size=document.getElementById('orderSize').value;
+    if(!name||!phone||!address||!size){showToast('من فضلك املأ كل الحقول');return;}
+    const btn=document.getElementById('submitOrderBtn');
+    document.getElementById('submitBtnText').style.display='none';
+    document.getElementById('submitBtnLoader').style.display='';
+    btn.disabled=true;
+    const logosData=Object.values(logosByView).flat().map(l=>({
+        src:l.src, view:l.view,
+        x_percent:parseFloat(l.xPercent.toFixed(2)),
+        y_percent:parseFloat(l.yPercent.toFixed(2)),
+        width_percent:parseFloat(l.widthPercent.toFixed(2)),
+        height_percent:parseFloat(l.heightPercent.toFixed(2)),
+        rotation:l.rotation||0
     }));
-
     try {
-        const res = await fetch('/orders', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept':        'application/json',
-                'X-CSRF-TOKEN':  CSRF_TOKEN,
-            },
-            body: JSON.stringify({
-                name, phone, address, size,
-                notes: document.getElementById('orderNotes').value,
-                product: 'hoodie', color: currentColor,
-                logos: logosData
-            })
+        const res=await fetch('/orders',{
+            method:'POST',
+            headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':CSRF_TOKEN},
+            body:JSON.stringify({name,phone,address,size,notes:document.getElementById('orderNotes').value,product:'hoodie',color:currentColor,logos:logosData})
         });
-        const data = await res.json();
-        if (data.success) {
-            document.getElementById('orderModalBody').innerHTML = `
-                <div class="success-msg">
-                    <div class="success-icon">✦</div>
-                    <h4>تم إرسال <span>طلبك</span></h4>
-                    <p>رقم الطلب: <strong>#${data.order_id||'—'}</strong></p>
-                    <p style="margin-top:6px;">هنتواصل معاك على ${phone} قريباً</p>
-                </div>`;
-            document.getElementById('orderModalFooter').innerHTML = `<button class="btn-submit" onclick="closeModal('orderModal')" style="flex:1">حسناً ✓</button>`;
+        const data=await res.json();
+        if(data.success){
+            document.getElementById('orderModalBody').innerHTML=`<div class="success-msg"><div class="success-icon">✦</div><h4>تم إرسال <span>طلبك</span></h4><p>رقم الطلب: <strong>#${data.order_id||'—'}</strong></p><p style="margin-top:6px;">هنتواصل معاك على ${phone} قريباً</p></div>`;
+            document.getElementById('orderModalFooter').innerHTML=`<button class="btn-submit" onclick="closeModal('orderModal')" style="flex:1">حسناً ✓</button>`;
         } else {
             showToast(data.message||'حدث خطأ'); btn.disabled=false;
             document.getElementById('submitBtnText').style.display=''; document.getElementById('submitBtnLoader').style.display='none';
@@ -1318,16 +1297,8 @@ async function submitOrder() {
     }
 }
 
-/* ════ UTILS ════ */
-function closeModal(id) {
-    document.getElementById(id).classList.remove('open');
-    // FIX: إغلاق الـ modal ما يشيلش اللوجوهات من الـ state
-    // اللوجوهات موجودة في logosByView وهي منفصلة عن الـ DOM
-}
-
-document.querySelectorAll('.modal-overlay').forEach(m => {
-    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-});
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>{ m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); }); });
 </script>
 </body>
 </html>
