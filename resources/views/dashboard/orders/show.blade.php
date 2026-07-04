@@ -168,7 +168,7 @@
                                 <div class="view-label">{{ $viewData['label'] }}</div>
 
                                 <model-viewer
-                                    src="{{ asset('assets/img/3ds/t_shirt_hoodie_3d_model.glb') }}"
+                                    src="{{ asset('assets/3d_models/t-shirt-basic.glb') }}"
                                     camera-orbit="{{ $viewData['orbit'] }}"
                                     min-camera-orbit="{{ $viewData['orbit'] }}"
                                     max-camera-orbit="{{ $viewData['orbit'] }}"
@@ -219,9 +219,9 @@
                     <span>الموضع Y: {{ $logo['y_percent'] }}%</span>
                     <span>الدوران: {{ $logo['rotation'] }}°</span>
                 </div>
-                <a href="{{ $logo['src'] }}" download target="_blank">
-                    تحميل الصورة
-                </a>
+                <a href="#" onclick="downloadImage('{{ $logo['src'] }}', '{{ basename(parse_url($logo['src'], PHP_URL_PATH)) }}')" >
+    تحميل الصورة
+</a>
             </div>
         @endforeach
     </div>
@@ -238,6 +238,7 @@
 @endsection
 
 @section('js')
+
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 <script>
     function updateStatus() {
@@ -265,6 +266,23 @@
             }
         })
         .catch(() => alert('حدث خطأ في الاتصال'));
+    }
+
+    async function downloadImage(url, filename) {
+        try {
+            // Create a temporary link element
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.target = '_blank';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch(e) {
+            // Fallback: open in new tab
+            window.open(url, '_blank');
+        }
     }
 </script>
 @endsection

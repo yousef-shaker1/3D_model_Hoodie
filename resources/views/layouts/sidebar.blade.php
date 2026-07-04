@@ -201,6 +201,12 @@
               <span>الاوردر</span>
           </a>
       </li>
+      <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('colors.index') }}">
+              <i class="bi bi-image"></i>
+              <span>الالوان</span>
+          </a>
+      </li>
   {{--
       <li class="nav-item">
         <a class="nav-link collapsed" href="{{ route('orders.index') }}">

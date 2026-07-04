@@ -3,6 +3,7 @@
 use App\Http\Controllers\back\DashboardController;
 use App\Http\Controllers\back\LogoController;
 use App\Http\Controllers\back\LogoSectionController;
+use App\Http\Controllers\ColorController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
@@ -37,6 +38,8 @@ Route::middleware('auth')->group(function () {
 
 Route::resource('sections', LogoSectionController::class);
 Route::resource('logos', LogoController::class);
+Route::resource('colors', ColorController::class);
+Route::post('colors/{color}/toggle', [ColorController::class, 'toggleActive'])->name('colors.toggle');
 
 Route::get('/designer', [OrderController::class, 'index'])->name('designer');
 
