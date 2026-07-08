@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" style="background-color:#0f172a;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -10,42 +10,68 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Cairo:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* ─── Palette ─── */
-            --cream:      #faf8f4;
-            --cream-dark: #f2ede4;
-            --parchment:  #e8e0d0;
-            --gold:       #b8924a;
-            --gold-deep:  #9a7535;
-            --gold-light: #d4aa6a;
-            --gold-soft:  rgba(184,146,74,0.12);
-            --gold-glow:  rgba(184,146,74,0.3);
-            --ink:        #1a1612;
-            --ink-soft:   #2d2820;
-            --charcoal:   #3d3530;
-            --muted:      #8a7d6e;
-            --muted-light:#b5a898;
-            --border:     rgba(184,146,74,0.18);
-            --border-soft:rgba(26,22,18,0.08);
-            --danger:     #c0392b;
-            --white:      #ffffff;
-            --sidebar-bg: #1e1a16;
+            /* ─── Navy Blue Dark Theme (الكحلي الغامق) ─── */
+            --cream:      #0f172a;
+            --cream-dark: #1e293b;
+            --parchment:  #334155;
+            --gold:       #818cf8;
+            --gold-deep:  #6366f1;
+            --gold-light: #a5b4fc;
+            --gold-soft:  rgba(129, 140, 248, 0.15);
+            --gold-glow:  rgba(129, 140, 248, 0.4);
+            --ink:        #f8fafc;
+            --ink-soft:   #e2e8f0;
+            --charcoal:   #cbd5e1;
+            --muted:      #94a3b8;
+            --muted-light:#64748b;
+            --border:     rgba(255, 255, 255, 0.1);
+            --border-soft:rgba(255, 255, 255, 0.05);
+            --danger:     #ef4444;
+            --white:      #1e293b;
+            --sidebar-bg: #0f172a;
             --sidebar-w:  288px;
-            --topbar-h:   56px;
-            --bottombar-h:64px;
-            --font-display: 'Cormorant Garamond', serif;
+            --topbar-h:   64px;
+            --bottombar-h:72px;
+            --font-display: 'Playfair Display', serif;
             --font-serif:   'Playfair Display', serif;
             --font-body:    'Cairo', sans-serif;
-            --radius:     14px;
-            --radius-sm:  8px;
-            --radius-lg:  20px;
-            --shadow-sm:  0 2px 8px rgba(26,22,18,0.08);
-            --shadow-md:  0 8px 24px rgba(26,22,18,0.12);
-            --shadow-lg:  0 20px 48px rgba(26,22,18,0.18);
-            --shadow-gold:0 0 28px rgba(184,146,74,0.25);
+            --radius:     16px;
+            --radius-sm:  10px;
+            --radius-lg:  24px;
+            --shadow-sm:  0 4px 12px rgba(0,0,0,0.3);
+            --shadow-md:  0 12px 32px rgba(0,0,0,0.4);
+            --shadow-lg:  0 24px 64px rgba(0,0,0,0.5);
+            --shadow-gold:0 0 32px rgba(129, 140, 248, 0.25);
+        }
+
+        html[data-theme="dark"] {
+            /* ─── Modern Dark Theme (Black/Indigo) ─── */
+            --cream:      #09090b;
+            --cream-dark: #18181b;
+            --parchment:  #27272a;
+            --gold:       #6366f1;
+            --gold-deep:  #4f46e5;
+            --gold-light: #818cf8;
+            --gold-soft:  rgba(99, 102, 241, 0.15);
+            --gold-glow:  rgba(99, 102, 241, 0.4);
+            --ink:        #f8fafc;
+            --ink-soft:   #e2e8f0;
+            --charcoal:   #cbd5e1;
+            --muted:      #a1a1aa;
+            --muted-light:#71717a;
+            --border:     rgba(255, 255, 255, 0.12);
+            --border-soft:rgba(255, 255, 255, 0.06);
+            --danger:     #ef4444;
+            --white:      #18181b;
+            --sidebar-bg: #09090b;
+            --shadow-sm:  0 4px 12px rgba(0,0,0,0.5);
+            --shadow-md:  0 12px 32px rgba(0,0,0,0.6);
+            --shadow-lg:  0 24px 64px rgba(0,0,0,0.8);
+            --shadow-gold:0 0 32px rgba(79, 70, 229, 0.25);
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; background: var(--cream); color: var(--ink); font-family: var(--font-body); overflow: hidden; }
+        html, body { height: 100%; background: var(--cream); color: var(--ink); font-family: var(--font-body); overflow: hidden; transition: background-color 0.4s ease, color 0.4s ease; }
 
         /* Subtle grain overlay */
         body::after {
@@ -59,7 +85,7 @@
         /* ════ LOADING ════ */
         #loadingScreen {
             position: fixed; inset: 0;
-            background: var(--ink);
+            background: #0f172a;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 99998; transition: opacity 0.9s ease, visibility 0.9s ease;
             gap: 20px;
@@ -86,13 +112,13 @@
 
         .ls-brand {
             font-family: var(--font-display);
-font-size: clamp(24px, 6vw, 60px);            font-weight: 300;
+            font-size: clamp(24px, 6vw, 60px); font-weight: 300;
             letter-spacing: 0.35em;
-            color: var(--cream);
+            color: #ffffff;
             line-height: 1;
             text-indent: 0.35em;
         }
-        .ls-brand em { font-style: normal; color: var(--gold-light); font-weight: 600; }
+        .ls-brand em { font-style: normal; color: #a5b4fc; font-weight: 600; }
 
         .ls-tagline {
             font-size: 10px; letter-spacing: 0.5em; color: var(--muted-light);
@@ -147,7 +173,7 @@ font-size: clamp(24px, 6vw, 60px);            font-weight: 300;
         .sb-brand {
             font-family: var(--font-display);
             font-size: 28px; font-weight: 300;
-            letter-spacing: 0.3em; color: var(--cream);
+            letter-spacing: 0.3em; color: var(--ink);
             text-indent: 0.3em;
         }
         .sb-brand em { font-style: normal; color: var(--gold-light); font-weight: 600; }
@@ -955,6 +981,11 @@ font-size: clamp(24px, 6vw, 60px);            font-weight: 300;
     </style>
 </head>
 <body>
+<script>
+    if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+</script>
 
 <!-- LOADING -->
 <div id="loadingScreen">
@@ -999,6 +1030,16 @@ font-size: clamp(24px, 6vw, 60px);            font-weight: 300;
                 @endforeach
             </div>
 
+            <div class="logos-panel" id="logosPanel">
+                <div class="logos-panel-title" id="selectedSectionName"></div>
+                <div class="logo-grid" id="logoGrid"></div>
+            </div>
+
+            <label class="upload-logo-btn" for="uploadLogoInput">
+                <span>📎</span> ارفع لوجو من جهازك
+            </label>
+            <input type="file" id="uploadLogoInput" accept="image/*" style="display:none;" onchange="handleLogoUpload(this)">
+
             <div class="sb-section-label">اختر لون الهودي</div>
             <div class="sections-grid" id="colorsGrid">
                 @foreach($colors as $color)
@@ -1009,16 +1050,6 @@ font-size: clamp(24px, 6vw, 60px);            font-weight: 300;
                     <div style="width: 100%; height: 100%; border-radius: 6px; background-color: {{ $color->hex_code }}; position: relative; z-index: 1;"></div>
                 </div>
                 @endforeach
-            </div>
-
-            <label class="upload-logo-btn" for="uploadLogoInput">
-                <span>📎</span> ارفع لوجو من جهازك
-            </label>
-            <input type="file" id="uploadLogoInput" accept="image/*" style="display:none;" onchange="handleLogoUpload(this)">
-
-            <div class="logos-panel" id="logosPanel">
-                <div class="logos-panel-title" id="selectedSectionName"></div>
-                <div class="logo-grid" id="logoGrid"></div>
             </div>
 
             <div class="sb-section-label" style="margin-top:8px;">إرشادات</div>
@@ -1055,6 +1086,8 @@ font-size: clamp(24px, 6vw, 60px);            font-weight: 300;
             <button class="view-btn" id="freeControlBtn">تحكم حر</button>
             <div class="divider-dot"></div>
             <button class="view-btn" id="previewBtn">معاينة</button>
+            <div class="divider-dot"></div>
+            <button class="view-btn" id="themeToggleBtn" onclick="toggleTheme()">🌙 داكن</button>
         </div>
 
         <div class="canvas-wrap" id="canvasWrap">
@@ -1690,6 +1723,27 @@ async function submitOrder() {
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(m=>{ m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); }); });
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    const btn = document.getElementById('themeToggleBtn');
+    if (isDark) {
+        html.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        if (btn) btn.innerHTML = '🌙 داكن';
+    } else {
+        html.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        if (btn) btn.innerHTML = '☀️ رصاصي';
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('theme') === 'dark') {
+        const btn = document.getElementById('themeToggleBtn');
+        if (btn) btn.innerHTML = '☀️ رصاصي';
+    }
+});
 </script>
 </body>
 </html>
