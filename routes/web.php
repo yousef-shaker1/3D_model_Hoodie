@@ -10,19 +10,50 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 // User::create([
-//     'name' => 'Admin',
+    //     'name' => 'Admin',
 //     'email' => 'admin@gmail.com',
 //     'password' => Hash::make('12345678')
 // ]);
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-Route::get('/', [IndexController::class, 'index'])
-    ->name('home');
+// Landing Page
+Route::get('/', function () {
+    return view('landing');
+    })->name('home');
+    Route::get('/designer', [IndexController::class, 'index'])->name('designer');
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
 
+    Route::get('/clear-cache', function () {
+    // Run Cache Clear Commands
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('clear-compiled');
+    Artisan::call('optimize:clear');
+
+    // Get current time in a human-readable format
+    $timeNow = now()->format('Y-m-d H:i:s');
+
+    // Prepare the config file content
+    $configData = "<?php return [
+        'minutes_to_clear_menu' => '$timeNow',
+        'minutes_to_clear_home' => '$timeNow'
+    ];";
+
+    // Save to config/cache_clear.php
+    File::put(config_path('cache_clear.php'), $configData);
+
+    // Reload the configuration
+    Artisan::call('config:clear');
+
+    return "<div style='font-weight: bold; flex-direction: column; gap: 15px; padding: 10px; border-radius: 7px; font-size: 26px; color: green;'>
+                <span>Cache Cleared!</span>
+            </div>
+            <style>body{background: #f8faf8; display: flex; justify-content: center; align-items: center; min-height: 95vh;}</style>
+            <script>setTimeout(()=>history.back(),1500);</script>
+            ";
+})->name('clear-cache');
+    
+    //dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
 Route::get('dashboard/login', [DashboardController::class, 'login'])
     ->name('dashboard.login');
 
@@ -40,10 +71,9 @@ Route::resource('sections', LogoSectionController::class);
 Route::resource('logos', LogoController::class);
 Route::resource('colors', ColorController::class);
 Route::post('colors/{color}/toggle', [ColorController::class, 'toggleActive'])->name('colors.toggle');
-
-Route::get('/designer', [OrderController::class, 'index'])->name('designer');
-
 Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/orders',                    [OrderController::class, 'adminIndex'])->name('orders.index');
