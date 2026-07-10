@@ -5,7 +5,22 @@
 @endsection
 
 @section('css')
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Aref+Ruqaa:wght@400;700&family=Reem+Kufi:wght@400;700&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Tajawal:wght@300;400;500;700&family=Changa:wght@300;400;600;700&family=Lalezar&family=Katibeh&family=Rakkas&family=Scheherazade+New:wght@400;700&family=Lateef:wght@400;700&family=El+Messiri:wght@400;700&family=Marhey:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
 <style>
+    @font-face {
+        font-family: 'Diwani';
+        src: url('{{ asset('fonts/diwani.ttf') }}') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }
+    
+    @font-face {
+        font-family: 'ArefRuqaa';
+        src: url('{{ asset('fonts/ArefRuqaa.ttf') }}') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }
+    
     .info-label {
         font-size: 11px;
         font-weight: 600;
@@ -190,9 +205,23 @@
                                             height: {{ $logo['height_percent'] }}%;
                                             transform: rotate({{ $logo['rotation'] }}deg);
                                         ">
-                                            <img src="{{ $logo['src'] }}"
-                                                 style="width:100%; height:100%; object-fit:contain;
-                                                        filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));">
+                                            @if(isset($logo['type']) && $logo['type'] === 'text')
+                                                <span style="
+                                                    width:100%; height:100%;
+                                                    display: flex;
+                                                    align-items: center;
+                                                    justify-content: center;
+                                                    font-family: {{ $logo['font'] ?? 'Cairo, sans-serif' }};
+                                                    color: {{ $logo['color'] ?? '#ffffff' }};
+                                                    font-size: {{ ($logo['fontSizeCqw'] ?? 5) * 2 }}px;
+                                                    font-weight: 600;
+                                                    text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                                                ">{{ $logo['text'] ?? '' }}</span>
+                                            @else
+                                                <img src="{{ $logo['src'] }}"
+                                                     style="width:100%; height:100%; object-fit:contain;
+                                                            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));">
+                                            @endif
                                         </div>
                                         @endif
                                     @endforeach
@@ -201,32 +230,57 @@
                         </div>
                         @endforeach
                     </div>
-<h3>اللوجوهات المستخدمة</h3>
+<h3>اللوجوهات والنصوص المستخدمة</h3>
 
 @if($order->logos && count($order->logos) > 0)
     <div class="logos-grid">
         @foreach($order->logos as $logo)
             <div class="logo-card">
-                <img
-                    src="{{ $logo['src'] }}"
-                    alt="لوجو - {{ $logo['view'] }}"
-                    style="width:120px; height:120px; object-fit:contain; border:1px solid #ddd; border-radius:8px;"
-                >
+                @if(isset($logo['type']) && $logo['type'] === 'text')
+                    <div style="
+                        width:120px; height:120px; 
+                        display: flex; align-items: center; justify-content: center;
+                        border:1px solid #ddd; border-radius:8px;
+                        background: #000000;
+                        font-family: {{ $logo['font'] ?? 'Cairo, sans-serif' }};
+                        color: {{ $logo['color'] ?? '#ffffff' }};
+                        font-size: 18px;
+                        font-weight: 600;
+                        text-align: center;
+                        padding: 10px;
+                        overflow: hidden;
+                    ">{{ $logo['text'] ?? '' }}</div>
+                @else
+                    <img
+                        src="{{ $logo['src'] }}"
+                        alt="لوجو - {{ $logo['view'] }}"
+                        style="width:120px; height:120px; object-fit:contain; border:1px solid #ddd; border-radius:8px;"
+                    >
+                @endif
                 <div class="logo-meta">
+                    @if(isset($logo['type']) && $logo['type'] === 'text')
+                        <span>النوع: نص مخصص</span>
+                        <span>النص: {{ Str::limit($logo['text'] ?? '', 20) }}</span>
+                        <span>الخط: {{ $logo['font'] ?? 'Cairo' }}</span>
+                    @else
+                        <span>النوع: لوجو</span>
+                    @endif
                     <span>الوجه: {{ $logo['view'] }}</span>
                     <span>الحجم: {{ $logo['width_percent'] }}%</span>
                     <span>الموضع X: {{ $logo['x_percent'] }}%</span>
                     <span>الموضع Y: {{ $logo['y_percent'] }}%</span>
                     <span>الدوران: {{ $logo['rotation'] }}°</span>
                 </div>
+                @if(!isset($logo['type']) || $logo['type'] !== 'text')
                 <a href="#" onclick="downloadImage('{{ $logo['src'] }}', '{{ basename(parse_url($logo['src'], PHP_URL_PATH)) }}')" >
     تحميل الصورة
 </a>
+                @endif
             </div>
         @endforeach
     </div>
 @else
-    <p>لا توجد لوجوهات</p>
+    <p>لا توجد لوجوهات أو نصوص</p>
 @endif
                 </div>
             </div>
@@ -241,6 +295,35 @@
 
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 <script>
+    // Apply color to 3D model
+    function applyColorToModel(modelViewer, color) {
+        if (!modelViewer) return;
+        
+        modelViewer.addEventListener('load', () => {
+            try {
+                const model = modelViewer.model;
+                if (model && model.materials) {
+                    model.materials.forEach(material => {
+                        if (material && material.pbrMetallicRoughness) {
+                            material.pbrMetallicRoughness.setBaseColorFactor(color);
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn('Could not apply color to model:', e);
+            }
+        });
+    }
+
+    // Apply color to all model-viewers when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        const orderColor = '{{ $order->color }}';
+        const modelViewers = document.querySelectorAll('model-viewer');
+        modelViewers.forEach(viewer => {
+            applyColorToModel(viewer, orderColor);
+        });
+    });
+
     function updateStatus() {
         const status = document.getElementById('statusSelect').value;
 

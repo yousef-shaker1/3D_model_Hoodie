@@ -33,6 +33,11 @@ class OrderController extends Controller
     // انقل كل صورة من temp لـ permanent
     $logoController = new LogoController();
     $logos = collect($request->logos ?? [])->map(function ($logo) use ($logoController) {
+        if (isset($logo['type']) && $logo['type'] === 'text') {
+            // للنصوص المخصصة، احفظ البيانات كما هي
+            return $logo;
+        }
+        
         if (isset($logo['path'])) {
             // انقلها وحدّث الـ URL
             $logo['url'] = $logoController->moveToPermanent($logo['path']);
@@ -48,7 +53,7 @@ class OrderController extends Controller
         'size'    => $validated['size'],
         'notes'   => $validated['notes'] ?? null,
         'color'   => $validated['color'],
-        'logos'   => $logos,  // ← JSON مع URLs دائمة
+        'logos'   => $logos,  // ← JSON مع URLs دائمة وبيانات النصوص
     ]);
 
     return response()->json([

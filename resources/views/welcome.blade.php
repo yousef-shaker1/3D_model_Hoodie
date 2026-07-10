@@ -977,16 +977,42 @@ async function compositeLogoOnImage(bgDataUrl, viewKey) {
             ctx.drawImage(bg,0,0,size,size);
             const logos=logosByView[viewKey]||[];
             for(const d of logos){
-                await new Promise(rLogo=>{
-                    const lImg=new Image(); lImg.crossOrigin='anonymous';
-                    lImg.onload=()=>{ ctx.save(); const lx=(d.xPercent/100)*size,ly=(d.yPercent/100)*size,lw=(d.widthPercent/100)*size,lh=(d.heightPercent/100)*size,cx=lx+lw/2,cy=ly+lh/2; ctx.translate(cx,cy); ctx.rotate((d.rotation||0)*Math.PI/180); ctx.drawImage(lImg,-lw/2,-lh/2,lw,lh); ctx.restore(); rLogo(); };
-                    lImg.onerror=()=>rLogo(); lImg.src=d.src;
-                });
+                if (d.type === 'text') {
+                    await drawTextOnCanvas(ctx, d, size);
+                } else {
+                    await new Promise(rLogo=>{
+                        const lImg=new Image(); lImg.crossOrigin='anonymous';
+                        lImg.onload=()=>{ ctx.save(); const lx=(d.xPercent/100)*size,ly=(d.yPercent/100)*size,lw=(d.widthPercent/100)*size,lh=(d.heightPercent/100)*size,cx=lx+lw/2,cy=ly+lh/2; ctx.translate(cx,cy); ctx.rotate((d.rotation||0)*Math.PI/180); ctx.drawImage(lImg,-lw/2,-lh/2,lw,lh); ctx.restore(); rLogo(); };
+                        lImg.onerror=()=>rLogo(); lImg.src=d.src;
+                    });
+                }
             }
             resolve(canvas.toDataURL('image/png'));
         };
         bg.onerror=()=>resolve(bgDataUrl); bg.src=bgDataUrl;
     });
+}
+
+// دالة جديدة لرسم النص على الكانفاس
+async function drawTextOnCanvas(ctx, d, size) {
+    const fontPx = (d.fontSizeCqw / 100) * size; // نفس نسبة الـ cqw في الـ DOM
+    const fontFamily = d.font || "'Cairo', sans-serif";
+    try {
+        // نتأكد إن الخط اتحمّل قبل الرسم، وإلا هيرسم بخط بديل
+        await document.fonts.load(`${fontPx}px ${fontFamily}`);
+    } catch (e) {}
+    const cx = (d.centerXPercent / 100) * size;
+    const cy = (d.centerYPercent / 100) * size;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate((d.rotation || 0) * Math.PI / 180);
+    ctx.font = `${fontPx}px ${fontFamily}`;
+    ctx.fillStyle = d.color || '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.direction = 'rtl';
+    ctx.fillText(d.text, 0, 0);
+    ctx.restore();
 }
 
 function blobToDataUrl(blob) {
@@ -996,7 +1022,7 @@ function blobToDataUrl(blob) {
 /* ════ ORDER ════ */
 function openOrderModal() {
     const all=Object.values(logosByView).flat();
-    if(!all.length){showToast('من فضلك ضيف لوجو الأول!');return;}
+    // if(!all.length){showToast('من فضلك ضيف لوجو الأول!');return;}
     document.getElementById('orderModal').classList.add('open');
 }
 
@@ -1010,20 +1036,99 @@ async function submitOrder() {
     document.getElementById('submitBtnText').style.display='none';
     document.getElementById('submitBtnLoader').style.display='';
     btn.disabled=true;
-    const logosData=Object.values(logosByView).flat().map(l=>({src:l.src,view:l.view,x_percent:parseFloat(l.xPercent.toFixed(2)),y_percent:parseFloat(l.yPercent.toFixed(2)),width_percent:parseFloat(l.widthPercent.toFixed(2)),height_percent:parseFloat(l.heightPercent.toFixed(2)),rotation:l.rotation||0}));
+    const logosData=Object.values(logosByView).flat().map(l=>{
+        const baseData = {
+            view:l.view,
+            x_percent:parseFloat(parseFloat(l.xPercent || 0).toFixed(2)),
+            y_percent:parseFloat(parseFloat(l.yPercent || 0).toFixed(2)),
+            width_percent:parseFloat(parseFloat(l.widthPercent || 0).toFixed(2)),
+            height_percent:parseFloat(parseFloat(l.heightPercent || 0).toFixed(2)),
+            rotation:l.rotation||0
+        };
+        
+        if (l.type === 'text') {
+            baseData.type = 'text';
+            baseData.text = l.text || '';
+            baseData.rawText = l.rawText || '';
+            baseData.color = l.color || '#ffffff';
+            baseData.font = l.font || "'Cairo', sans-serif";
+            baseData.hasTashkeel = l.hasTashkeel || false;
+            baseData.fontSizeCqw = l.fontSizeCqw || 5;
+            baseData.isFixedWidth = l.isFixedWidth || false;
+        } else {
+            baseData.type = 'logo';
+            baseData.src = l.src;
+        }
+        
+        return baseData;
+    });
     try {
-        const res=await fetch('/orders',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':CSRF_TOKEN},body:JSON.stringify({name,phone,address,size,notes:document.getElementById('orderNotes').value,product:'hoodie',color:currentColor,logos:logosData})});
-        const data=await res.json();
+        console.log('logosData before sending:', logosData);
+        const payload = {
+            name, phone, address, size,
+            notes: document.getElementById('orderNotes').value,
+            product: 'hoodie',
+            color: currentColor,
+            logos: logosData
+        };
+        console.log('Full payload:', payload);
+        
+        let jsonPayload;
+        try {
+            jsonPayload = JSON.stringify(payload);
+            console.log('JSON payload length:', jsonPayload.length);
+        } catch(jsonError) {
+            console.error('JSON stringify error:', jsonError);
+            showToast('حدث خطأ في تجهيز البيانات');
+            btn.disabled=false;
+            document.getElementById('submitBtnText').style.display='';
+            document.getElementById('submitBtnLoader').style.display='none';
+            return;
+        }
+        
+        const res=await fetch('/orders',{
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json',
+                'Accept':'application/json',
+                'X-CSRF-TOKEN':CSRF_TOKEN
+            },
+            body: jsonPayload
+        });
+        
+        console.log('Response status:', res.status);
+        console.log('Response ok:', res.ok);
+        
+        let data;
+        try {
+            data = await res.json();
+            console.log('Response data:', data);
+        } catch(parseError) {
+            console.error('JSON parse error:', parseError);
+            console.log('Response text:', await res.text());
+            showToast('حدث خطأ في قراءة الرد');
+            btn.disabled=false;
+            document.getElementById('submitBtnText').style.display='';
+            document.getElementById('submitBtnLoader').style.display='none';
+            return;
+        }
+        
         if(data.success){
             document.getElementById('orderModalBody').innerHTML=`<div class="success-msg"><span class="success-icon">✦</span><h4>تم إرسال <em>طلبك</em></h4><p>رقم الطلب: <strong>#${data.order_id||'—'}</strong></p><p style="margin-top:6px;">هنتواصل معاك على ${phone} قريباً</p></div>`;
             document.getElementById('orderModalFooter').innerHTML=`<button class="btn-submit" onclick="closeModal('orderModal')" style="flex:1">حسناً ✓</button>`;
         } else {
-            showToast(data.message||'حدث خطأ'); btn.disabled=false;
-            document.getElementById('submitBtnText').style.display=''; document.getElementById('submitBtnLoader').style.display='none';
+            console.error('Server returned error:', data);
+            showToast(data.message||'حدث خطأ من السيرفر'); 
+            btn.disabled=false;
+            document.getElementById('submitBtnText').style.display=''; 
+            document.getElementById('submitBtnLoader').style.display='none';
         }
     } catch(e) {
-        showToast('حدث خطأ: '+e.message); btn.disabled=false;
-        document.getElementById('submitBtnText').style.display=''; document.getElementById('submitBtnLoader').style.display='none';
+        console.error('Network error:', e);
+        showToast('حدث خطأ في الاتصال: '+e.message); 
+        btn.disabled=false;
+        document.getElementById('submitBtnText').style.display=''; 
+        document.getElementById('submitBtnLoader').style.display='none';
     }
 }
 

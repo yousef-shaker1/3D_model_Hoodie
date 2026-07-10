@@ -13,6 +13,7 @@ class order extends Model
         'size',
         'notes',
         'logos',
+        'color',
         'status',
     ];
 
