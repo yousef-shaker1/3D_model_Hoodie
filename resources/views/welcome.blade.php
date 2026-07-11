@@ -121,11 +121,17 @@
                 @foreach($colors as $color)
                 <div class="section-item {{ $color->hex_code === '#1a1a1a' ? 'active' : '' }}" 
                      data-color="{{ $color->hex_code }}" 
+                     data-sizes="{{ json_encode($color->sizes ?? []) }}"
                      onclick="selectColorFromGrid(this)"
                      title="{{ $color->name }}">
                     <div style="width: 100%; height: 100%; border-radius: 6px; background-color: {{ $color->hex_code }}; position: relative; z-index: 1;"></div>
                 </div>
                 @endforeach
+            </div>
+
+            <div class="sb-section-label" style="margin-top:8px;">المقاسات المتاحة</div>
+            <div class="sizes-grid" id="sizesGrid">
+                <!-- Sizes will be generated here by JS -->
             </div>
 
             <div class="sb-section-label" style="margin-top:8px;">إرشادات</div>
@@ -222,7 +228,19 @@
         <div class="modal-body" id="orderModalBody">
             <div class="form-group"><label>الاسم الكامل</label><input type="text" id="orderName" placeholder="اكتب اسمك"></div>
             <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="orderPhone" placeholder="01xxxxxxxxx"></div>
-            <div class="form-group"><label>العنوان</label><input type="text" id="orderAddress" placeholder="المحافظة / المدينة"></div>
+            <div class="form-group">
+                <label>المحافظة</label>
+                <select id="orderGovernorate" onchange="updateShippingDisplay()">
+                    <option value="">اختر المحافظة</option>
+                    @foreach($governorates as $gov)
+                        <option value="{{ $gov->id }}" data-price="{{ $gov->shipping_price }}">{{ $gov->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div id="shippingPriceRow" style="display:none; background:rgba(67,97,238,0.08); border-radius:10px; padding:8px 14px; margin-bottom:8px; font-size:13px; color:#4361ee; display:none; align-items:center; gap:8px;">
+                <i>🚚</i> سعر الشحن: <strong id="shippingPriceVal">0</strong> ج.م
+            </div>
+            <div class="form-group"><label>العنوان التفصيلي</label><input type="text" id="orderAddress" placeholder="الشارع / المنطقة / الرقم"></div>
             <div class="form-group"><label>المقاس</label>
                 <select id="orderSize">
                     <option value="">اختر المقاس</option>
@@ -300,6 +318,7 @@ let dragPreview       = null, isDraggingFromSidebar = false, currentDragSource =
 let selectedLogo      = null, selectedLogoData = null;
 let logosByView       = { front:[], back:[], left:[], right:[] };
 let currentColor      = '#1a1a1a';
+let currentSize       = null;
 let uploadedLogos     = [];
 let currentSectionId  = null;
 
@@ -327,6 +346,12 @@ modelViewer.addEventListener('load', () => {
     setTimeout(() => document.getElementById('loadingScreen').classList.add('hidden'), 500);
     modelViewer.cameraOrbit = cameraViews.front;
     applyColorToModel(currentColor);
+    
+    // Initialize sizes for the default selected color
+    const defaultColorEl = document.querySelector('#colorsGrid .section-item.active');
+    if (defaultColorEl) {
+        updateSizesForColor(defaultColorEl.dataset.sizes);
+    }
 });
 setTimeout(() => {
     const ls = document.getElementById('loadingScreen');
@@ -433,6 +458,7 @@ document.addEventListener('touchend', e => { if (isDraggingFromSidebar) return; 
 function deselectAll() { if (selectedLogo) selectedLogo.classList.remove('selected'); selectedLogo=selectedLogoData=null; logoToolbar.classList.remove('active'); }
 function deselectLogo() { deselectAll(); }
 function selectLogo(logo, data) {
+    if (isFreeControlMode) stopFreeControl();
     logosOverlay.querySelectorAll('.logo-on-hoodie').forEach(l=>l.classList.remove('selected'));
     selectedLogo=logo; selectedLogoData=data; logo.classList.add('selected'); logoToolbar.classList.add('active');
     
@@ -477,6 +503,7 @@ hoodieWrapper.addEventListener('drop', e => {
 
 /* ════ ADD LOGO / TEXT ════ */
 function addLogo(src, x, y) {
+    if (isFreeControlMode) stopFreeControl();
     logoCounter++;
     const r = hoodieWrapper.getBoundingClientRect();
     const cx=(x/r.width)*100, cy=(y/r.height)*100;
@@ -494,6 +521,7 @@ function addLogo(src, x, y) {
 }
 
 function handleAddText() {
+    if (isFreeControlMode) stopFreeControl();
     deselectLogo();
     document.getElementById('addTextInput').value = '';
     document.getElementById('addTextInput').focus();
@@ -585,6 +613,7 @@ function handleTextLiveUpdate(type) {
 }
 
 function addText(rawText, processedText, color, font, hasTashkeel, x, y) {
+    if (isFreeControlMode) stopFreeControl();
     logoCounter++;
     const r = hoodieWrapper.getBoundingClientRect();
     const cx=(x/r.width)*100, cy=(y/r.height)*100;
@@ -830,7 +859,48 @@ function selectColorFromGrid(colorItem) {
     // Apply color to model
     applyColorToModel(color);
     
+    // Update sizes
+    updateSizesForColor(colorItem.dataset.sizes);
+    
     showToast('تم تغيير لون الهودي ✓');
+}
+
+function updateSizesForColor(sizesJson) {
+    const grid = document.getElementById('sizesGrid');
+    grid.innerHTML = '';
+    currentSize = null; // Reset selected size when color changes
+    
+    let availableSizes = [];
+    try {
+        if (sizesJson) availableSizes = JSON.parse(sizesJson);
+    } catch(e) {}
+    
+    const allSizes = ['S', 'M', 'L', 'XL', 'XXL'];
+    
+    allSizes.forEach(size => {
+        const isAvailable = availableSizes.includes(size);
+        const el = document.createElement('div');
+        el.className = `size-item ${!isAvailable ? 'unavailable' : ''}`;
+        el.textContent = size;
+        
+        if (isAvailable) {
+            el.onclick = () => selectSize(el, size);
+        }
+        
+        grid.appendChild(el);
+    });
+}
+
+function selectSize(el, size) {
+    document.querySelectorAll('#sizesGrid .size-item').forEach(item => item.classList.remove('active'));
+    el.classList.add('active');
+    currentSize = size;
+    
+    // Auto update the order modal select if it exists
+    const orderSizeSelect = document.getElementById('orderSize');
+    if (orderSizeSelect) {
+        orderSizeSelect.value = size;
+    }
 }
 
 function applyColorToModel(color) {
@@ -867,6 +937,7 @@ function hideProgress() {
 /* ════ UPLOAD LOGO ════ */
 async function handleLogoUpload(input) {
     const file = input.files[0]; if (!file) return;
+    if (isFreeControlMode) stopFreeControl();
     input.value = "";
     const originalBase64 = await new Promise(res => { const r=new FileReader(); r.onload=e=>res(e.target.result); r.readAsDataURL(file); });
     showProgress(10, 'جاري تحميل الـ AI...');
@@ -1026,12 +1097,27 @@ function openOrderModal() {
     document.getElementById('orderModal').classList.add('open');
 }
 
+function updateShippingDisplay() {
+    const sel = document.getElementById('orderGovernorate');
+    const row = document.getElementById('shippingPriceRow');
+    const valEl = document.getElementById('shippingPriceVal');
+    if (sel.value) {
+        const price = sel.options[sel.selectedIndex].dataset.price || '0';
+        valEl.textContent = price;
+        row.style.display = 'flex';
+    } else {
+        row.style.display = 'none';
+    }
+}
+
 async function submitOrder() {
     const name=document.getElementById('orderName').value.trim();
     const phone=document.getElementById('orderPhone').value.trim();
     const address=document.getElementById('orderAddress').value.trim();
-    const size=document.getElementById('orderSize').value;
-    if(!name||!phone||!address||!size){showToast('من فضلك املأ كل الحقول');return;}
+    const size=document.getElementById('orderSize').value || currentSize;
+    const governorateId=document.getElementById('orderGovernorate').value;
+    if(!name||!phone||!address||!size){showToast('من فضلك املأ كل الحقول وتأكد من اختيار المقاس');return;}
+    if(!governorateId){showToast('من فضلك اختر المحافظة');return;}
     const btn=document.getElementById('submitOrderBtn');
     document.getElementById('submitBtnText').style.display='none';
     document.getElementById('submitBtnLoader').style.display='';
@@ -1066,6 +1152,7 @@ async function submitOrder() {
         console.log('logosData before sending:', logosData);
         const payload = {
             name, phone, address, size,
+            governorate_id: governorateId,
             notes: document.getElementById('orderNotes').value,
             product: 'hoodie',
             color: currentColor,

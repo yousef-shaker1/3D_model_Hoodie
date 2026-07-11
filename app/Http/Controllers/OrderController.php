@@ -17,18 +17,25 @@ class OrderController extends Controller
         // return view('designer', compact('sections'));
     }
 
-    // ===== استقبال الطلب من الـ AJAX =====
     public function store(Request $request)
 {
     $validated = $request->validate([
-        'name'    => 'required|string',
-        'phone'   => 'required|string',
-        'address' => 'required|string',
-        'size'    => 'required|string',
-        'notes'   => 'nullable|string',
-        'color'   => 'required|string',
-        'logos'   => 'nullable|array',
+        'name'           => 'required|string',
+        'phone'          => 'required|string',
+        'address'        => 'required|string',
+        'size'           => 'required|string',
+        'notes'          => 'nullable|string',
+        'color'          => 'required|string',
+        'logos'          => 'nullable|array',
+        'governorate_id' => 'nullable|exists:governorates,id',
     ]);
+
+    // احسب سعر الشحن من المحافظة
+    $shippingCost = 0;
+    if (!empty($validated['governorate_id'])) {
+        $gov = \App\Models\Governorate::find($validated['governorate_id']);
+        $shippingCost = $gov ? $gov->shipping_price : 0;
+    }
 
     // انقل كل صورة من temp لـ permanent
     $logoController = new LogoController();
@@ -47,25 +54,28 @@ class OrderController extends Controller
     })->toArray();
 
     $order = OrderModel::create([
-        'name'    => $validated['name'],
-        'phone'   => $validated['phone'],
-        'address' => $validated['address'],
-        'size'    => $validated['size'],
-        'notes'   => $validated['notes'] ?? null,
-        'color'   => $validated['color'],
-        'logos'   => $logos,  // ← JSON مع URLs دائمة وبيانات النصوص
+        'name'           => $validated['name'],
+        'phone'          => $validated['phone'],
+        'address'        => $validated['address'],
+        'size'           => $validated['size'],
+        'notes'          => $validated['notes'] ?? null,
+        'color'          => $validated['color'],
+        'logos'          => $logos,
+        'governorate_id' => $validated['governorate_id'] ?? null,
+        'shipping_cost'  => $shippingCost,
     ]);
 
     return response()->json([
-        'success'  => true,
-        'order_id' => $order->id,
+        'success'       => true,
+        'order_id'      => $order->id,
+        'shipping_cost' => $shippingCost,
     ]);
 }
 
     // ===== لوحة تحكم الأدمن - قائمة الطلبات =====
     public function adminIndex(Request $request)
     {
-        $query = OrderModel::latest();
+        $query = OrderModel::with('governorate')->latest();
 
         // فلتر البحث (اسم أو هاتف)
         if ($search = $request->input('search')) {
