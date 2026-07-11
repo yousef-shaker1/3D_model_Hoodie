@@ -202,8 +202,36 @@
 
         /* Sections Grid */
         .sections-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 6px; margin-bottom: 4px;
+        }
+
+        .sizes-grid {
             display: grid; grid-template-columns: repeat(5, 1fr);
-            gap: 5px; margin-bottom: 10px;
+            gap: 6px; margin-bottom: 4px;
+        }
+        .size-item {
+            aspect-ratio: 1; border-radius: 6px;
+            background: var(--parchment); border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; color: var(--muted);
+            cursor: pointer; transition: all 0.2s;
+            position: relative; overflow: hidden;
+        }
+        .size-item:hover:not(.unavailable) {
+            border-color: var(--gold-light); color: var(--gold-light);
+        }
+        .size-item.active {
+            border-color: var(--gold); background: var(--gold-soft); color: var(--gold-light);
+            box-shadow: 0 0 10px var(--gold-glow);
+        }
+        .size-item.unavailable {
+            opacity: 0.4; cursor: not-allowed;
+            background: var(--cream);
+        }
+        .size-item.unavailable::after {
+            content: ''; position: absolute; top: 50%; left: -10%; width: 120%; height: 1px;
+            background: var(--danger); transform: rotate(-45deg);
         }
         .section-item {
             aspect-ratio: 1;

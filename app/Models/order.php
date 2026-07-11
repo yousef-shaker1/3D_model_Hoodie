@@ -15,7 +15,14 @@ class order extends Model
         'logos',
         'color',
         'status',
+        'governorate_id',
+        'shipping_cost',
     ];
+
+    public function governorate()
+    {
+        return $this->belongsTo(Governorate::class);
+    }
 
     protected $casts = [
         'logos' => 'array',  // تحويل JSON تلقائياً لـ array

@@ -207,6 +207,12 @@
               <span>الالوان</span>
           </a>
       </li>
+      <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('governorates.index') }}">
+              <i class="bi bi-truck"></i>
+              <span>المحافظات والشحن</span>
+          </a>
+      </li>
   {{--
       <li class="nav-item">
         <a class="nav-link collapsed" href="{{ route('orders.index') }}">

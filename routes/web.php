@@ -70,6 +70,7 @@ Route::middleware('auth')->group(function () {
 Route::resource('sections', LogoSectionController::class);
 Route::resource('logos', LogoController::class);
 Route::resource('colors', ColorController::class);
+Route::resource('governorates', App\Http\Controllers\GovernorateController::class);
 Route::post('colors/{color}/toggle', [ColorController::class, 'toggleActive'])->name('colors.toggle');
 Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
 

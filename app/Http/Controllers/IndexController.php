@@ -19,6 +19,8 @@ class IndexController extends Controller
             return Color::active()->get();
         });
 
-        return view('welcome', compact('sections', 'colors'));
+        $governorates = \App\Models\Governorate::where('is_active', true)->orderBy('name')->get();
+
+        return view('welcome', compact('sections', 'colors', 'governorates'));
     }
 }

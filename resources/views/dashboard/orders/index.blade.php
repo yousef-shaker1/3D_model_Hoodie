@@ -408,8 +408,9 @@
                 <tr>
                     <th>#</th>
                     <th>العميل</th>
-                    <th>العنوان</th>
+                    <th>المحافظة / العنوان</th>
                     <th>المقاس</th>
+                    <th>الشحن</th>
                     <th>اللوجوهات</th>
                     <th>الحالة</th>
                     <th>التاريخ</th>
@@ -431,9 +432,21 @@
                             </div>
                         </div>
                     </td>
-                    <td style="color:var(--clr-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $order->address }}">
-                        <i class="bi bi-geo-alt" style="color:var(--clr-accent);"></i>
-                        {{ $order->address }}
+                    <td style="color:var(--clr-muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $order->address }}">
+                        @if($order->governorate)
+                            <div style="font-weight:600;color:var(--clr-text);font-size:12px;"><i class="bi bi-geo-alt" style="color:var(--clr-accent);"></i> {{ $order->governorate->name }}</div>
+                            <div style="font-size:11px;">{{ $order->address }}</div>
+                        @else
+                            <i class="bi bi-geo-alt" style="color:var(--clr-accent);"></i>
+                            {{ $order->address }}
+                        @endif
+                    </td>
+                    <td>
+                        @if($order->shipping_cost > 0)
+                            <span style="background:rgba(67,97,238,0.1);color:#4361ee;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:600;">{{ $order->shipping_cost }} ج.م</span>
+                        @else
+                            <span style="color:var(--clr-muted);font-size:12px;">-</span>
+                        @endif
                     </td>
                     <td><span class="size-badge">{{ $order->size }}</span></td>
                     <td>

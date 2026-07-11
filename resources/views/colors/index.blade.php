@@ -198,6 +198,7 @@
                                                 <th>اللون</th>
                                                 <th>الاسم</th>
                                                 <th>كود اللون</th>
+                                                <th>المقاسات المتاحة</th>
                                                 <th>الحالة</th>
                                                 <th>الترتيب</th>
                                                 <th>التحكم</th>
@@ -212,6 +213,15 @@
                                                 </td>
                                                 <td><strong>{{ $color->name }}</strong></td>
                                                 <td><code>{{ $color->hex_code }}</code></td>
+                                                <td>
+                                                    @if(is_array($color->sizes) && count($color->sizes) > 0)
+                                                        @foreach($color->sizes as $size)
+                                                            <span class="badge bg-secondary">{{ $size }}</span>
+                                                        @endforeach
+                                                    @else
+                                                        <span class="text-muted small">الكل</span>
+                                                    @endif
+                                                </td>
                                                 <td>
                                                     @if($color->active)
                                                         <span class="status-badge status-active">نشط - يظهر في الموقع</span>
@@ -279,6 +289,21 @@
                                                                     </select>
                                                                 </div>
                                                                 <div class="mb-3">
+                                                                    <label class="form-label">المقاسات المتاحة لهذا اللون</label>
+                                                                    <div class="d-flex gap-3 flex-wrap">
+                                                                        @php $availableSizes = is_array($color->sizes) ? $color->sizes : []; @endphp
+                                                                        @foreach(['S', 'M', 'L', 'XL', 'XXL'] as $size)
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" name="sizes[]" value="{{ $size }}" id="size_{{ $size }}_{{ $color->id }}" {{ in_array($size, $availableSizes) ? 'checked' : '' }}>
+                                                                            <label class="form-check-label" for="size_{{ $size }}_{{ $color->id }}">
+                                                                                {{ $size }}
+                                                                            </label>
+                                                                        </div>
+                                                                        @endforeach
+                                                                    </div>
+                                                                    <small class="text-muted">إذا لم تختر أي مقاس، فلن يظهر أي مقاس متاح.</small>
+                                                                </div>
+                                                                <div class="mb-3">
                                                                     <label class="form-label">الترتيب</label>
                                                                     <input type="number" class="form-control" name="sort_order" value="{{ $color->sort_order }}">
                                                                 </div>
@@ -319,6 +344,15 @@
                                                 </td>
                                                 <td><strong>{{ $color->name }}</strong></td>
                                                 <td><code>{{ $color->hex_code }}</code></td>
+                                                <td>
+                                                    @if(is_array($color->sizes) && count($color->sizes) > 0)
+                                                        @foreach($color->sizes as $size)
+                                                            <span class="badge bg-secondary">{{ $size }}</span>
+                                                        @endforeach
+                                                    @else
+                                                        <span class="text-muted small">الكل</span>
+                                                    @endif
+                                                </td>
                                                 <td>{{ $color->sort_order }}</td>
                                                 <td>
                                                     <form action="{{ route('colors.toggle', $color->id) }}" method="POST">
@@ -382,6 +416,15 @@
                                                 </td>
                                                 <td><strong>{{ $color->name }}</strong></td>
                                                 <td><code>{{ $color->hex_code }}</code></td>
+                                                <td>
+                                                    @if(is_array($color->sizes) && count($color->sizes) > 0)
+                                                        @foreach($color->sizes as $size)
+                                                            <span class="badge bg-secondary">{{ $size }}</span>
+                                                        @endforeach
+                                                    @else
+                                                        <span class="text-muted small">الكل</span>
+                                                    @endif
+                                                </td>
                                                 <td>{{ $color->sort_order }}</td>
                                                 <td>
                                                     <form action="{{ route('colors.toggle', $color->id) }}" method="POST">
@@ -457,6 +500,20 @@
                                 <option value="1" selected>نشط - يظهر في الموقع</option>
                                 <option value="0">غير نشط - لا يظهر</option>
                             </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">المقاسات المتاحة لهذا اللون</label>
+                            <div class="d-flex gap-3 flex-wrap">
+                                @foreach(['S', 'M', 'L', 'XL', 'XXL'] as $size)
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="sizes[]" value="{{ $size }}" id="new_size_{{ $size }}" checked>
+                                    <label class="form-check-label" for="new_size_{{ $size }}">
+                                        {{ $size }}
+                                    </label>
+                                </div>
+                                @endforeach
+                            </div>
+                            <small class="text-muted">إذا لم تختر أي مقاس، فلن يظهر أي مقاس متاح.</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">الترتيب</label>
