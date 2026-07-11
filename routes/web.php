@@ -7,6 +7,7 @@ use App\Http\Controllers\ColorController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PromoCodeController;
 use Illuminate\Support\Facades\Route;
 
 // User::create([
@@ -73,6 +74,8 @@ Route::resource('colors', ColorController::class);
 Route::resource('governorates', App\Http\Controllers\GovernorateController::class);
 Route::post('colors/{color}/toggle', [ColorController::class, 'toggleActive'])->name('colors.toggle');
 Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+Route::post('/logos/upload-temp', [OrderController::class, 'uploadTemp']);
+Route::post('/promo-codes/validate', [PromoCodeController::class, 'validateCode'])->name('promo-codes.validate');
 
 
 
@@ -82,8 +85,8 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/orders/{order}/status',      [OrderController::class, 'updateStatus'])->name('orders.status');
     Route::patch('/orders/{order}/status-ajax', [OrderController::class, 'updateStatusAjax'])->name('orders.status.ajax');
     Route::delete('/orders/{order}',   [OrderController::class, 'destroy'])->name('orders.destroy');
+    
+    Route::resource('promo-codes', PromoCodeController::class);
 });
-
-Route::post('/logos/upload-temp', [OrderController::class, 'uploadTemp']);
 
 require __DIR__.'/auth.php';

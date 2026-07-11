@@ -213,6 +213,12 @@
               <span>المحافظات والشحن</span>
           </a>
       </li>
+      <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('promo-codes.index') }}">
+              <i class="bi bi-tag"></i>
+              <span>أكواد الخصم</span>
+          </a>
+      </li>
   {{--
       <li class="nav-item">
         <a class="nav-link collapsed" href="{{ route('orders.index') }}">

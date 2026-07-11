@@ -10,7 +10,7 @@ class ColorController extends Controller
     public function index()
     {
         $colors = Color::orderBy('sort_order')->get();
-        return view('colors.index', compact('colors'));
+        return view('dashboard.colors.index', compact('colors'));
     }
 
     public function store(Request $request)

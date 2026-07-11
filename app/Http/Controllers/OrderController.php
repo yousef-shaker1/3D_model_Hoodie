@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\back\LogoController;
 use App\Models\LogoSection;
 use App\Models\order as OrderModel;
+use App\Models\PromoCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -28,6 +29,7 @@ class OrderController extends Controller
         'color'          => 'required|string',
         'logos'          => 'nullable|array',
         'governorate_id' => 'nullable|exists:governorates,id',
+        'promo_code'     => 'nullable|string',
     ]);
 
     // احسب سعر الشحن من المحافظة
@@ -53,6 +55,22 @@ class OrderController extends Controller
         return $logo;
     })->toArray();
 
+    // التحقق من البرمو كود
+    $promoCode = null;
+    if ($request->promo_code) {
+        $promoCode = PromoCode::where('code', strtoupper($request->promo_code))->first();
+        
+        if (!$promoCode || !$promoCode->isValid()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'كود الخصم غير صالح أو منتهي الصلاحية'
+            ]);
+        }
+        
+        // زيادة عدد الاستخدامات
+        $promoCode->incrementUsage();
+    }
+
     $order = OrderModel::create([
         'name'           => $validated['name'],
         'phone'          => $validated['phone'],
@@ -63,12 +81,14 @@ class OrderController extends Controller
         'logos'          => $logos,
         'governorate_id' => $validated['governorate_id'] ?? null,
         'shipping_cost'  => $shippingCost,
+        'promo_code'     => $promoCode ? $promoCode->code : null,
     ]);
 
     return response()->json([
-        'success'       => true,
-        'order_id'      => $order->id,
-        'shipping_cost' => $shippingCost,
+        'success'          => true,
+        'order_id'         => $order->id,
+        'shipping_cost'    => $shippingCost,
+        'discount_applied' => $promoCode ? true : false,
     ]);
 }
 

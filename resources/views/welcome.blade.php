@@ -248,6 +248,7 @@
                 </select>
             </div>
             <div class="form-group"><label>ملاحظات (اختياري)</label><textarea id="orderNotes" rows="2" placeholder="أي ملاحظات..."></textarea></div>
+            <div class="form-group"><label>كود الخصم (اختياري)</label><input type="text" id="orderPromoCode" placeholder="أدخل كود الخصم" onblur="validatePromoCode()"><div id="promoCodeMessage" style="font-size: 12px; margin-top: 5px;"></div></div>
         </div>
         <div class="modal-footer" id="orderModalFooter">
             <button class="btn-cancel" onclick="closeModal('orderModal')">إلغاء</button>
@@ -352,6 +353,8 @@ modelViewer.addEventListener('load', () => {
     if (defaultColorEl) {
         updateSizesForColor(defaultColorEl.dataset.sizes);
     }
+    
+    updateContainerBackground(currentColor);
 });
 setTimeout(() => {
     const ls = document.getElementById('loadingScreen');
@@ -906,6 +909,9 @@ function selectSize(el, size) {
 function applyColorToModel(color) {
     if (!modelViewer) return;
     
+    // Update background based on color brightness
+    updateContainerBackground(color);
+    
     try {
         // Try to change material color using model-viewer API
         const model = modelViewer.model;
@@ -920,6 +926,28 @@ function applyColorToModel(color) {
         // Fallback: use color overlay
         colorOverlay.style.backgroundColor = color;
         colorOverlay.classList.add('active');
+    }
+}
+
+function updateContainerBackground(color) {
+    const container = document.getElementById('hoodieContainer');
+    if (!container) return;
+    
+    // Calculate brightness
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    
+    // If color is light (brightness > 128), use dark background
+    if (brightness > 128) {
+        container.style.background = 'radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 100%)';
+        container.style.boxShadow = 'inset 0 0 40px rgba(0,0,0,0.3)';
+    } else {
+        // If color is dark, use light background
+        container.style.background = 'radial-gradient(circle at center, #f0f0f0 0%, #e0e0e0 100%)';
+        container.style.boxShadow = 'inset 0 0 40px rgba(0,0,0,0.1)';
     }
 }
 
@@ -1110,12 +1138,52 @@ function updateShippingDisplay() {
     }
 }
 
+async function validatePromoCode() {
+    const code = document.getElementById('orderPromoCode').value.trim();
+    const messageDiv = document.getElementById('promoCodeMessage');
+    
+    if (!code) {
+        messageDiv.innerHTML = '';
+        return;
+    }
+    
+    try {
+        const res = await fetch('/promo-codes/validate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': CSRF_TOKEN
+            },
+            body: JSON.stringify({ code })
+        });
+        
+        const data = await res.json();
+        
+        if (data.valid) {
+            messageDiv.innerHTML = `<span style="color: green;">✓ ${data.message}`;
+            if (data.discount_percent > 0) {
+                messageDiv.innerHTML += ` - خصم ${data.discount_percent}%`;
+            }
+            if (data.discount_fixed > 0) {
+                messageDiv.innerHTML += ` - خصم ${data.discount_fixed}`;
+            }
+            messageDiv.innerHTML += '</span>';
+        } else {
+            messageDiv.innerHTML = `<span style="color: red;">✗ ${data.message}</span>`;
+        }
+    } catch (e) {
+        console.error('Error validating promo code:', e);
+        messageDiv.innerHTML = `<span style="color: red;">حدث خطأ في التحقق من الكود</span>`;
+    }
+}
+
 async function submitOrder() {
     const name=document.getElementById('orderName').value.trim();
     const phone=document.getElementById('orderPhone').value.trim();
     const address=document.getElementById('orderAddress').value.trim();
     const size=document.getElementById('orderSize').value || currentSize;
     const governorateId=document.getElementById('orderGovernorate').value;
+    const promoCode=document.getElementById('orderPromoCode').value.trim();
     if(!name||!phone||!address||!size){showToast('من فضلك املأ كل الحقول وتأكد من اختيار المقاس');return;}
     if(!governorateId){showToast('من فضلك اختر المحافظة');return;}
     const btn=document.getElementById('submitOrderBtn');
@@ -1156,7 +1224,8 @@ async function submitOrder() {
             notes: document.getElementById('orderNotes').value,
             product: 'hoodie',
             color: currentColor,
-            logos: logosData
+            logos: logosData,
+            promo_code: promoCode
         };
         console.log('Full payload:', payload);
         

@@ -17,6 +17,7 @@ class order extends Model
         'status',
         'governorate_id',
         'shipping_cost',
+        'promo_code',
     ];
 
     public function governorate()
