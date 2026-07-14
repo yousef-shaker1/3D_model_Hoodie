@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\back\DashboardController;
 use App\Http\Controllers\back\LogoController;
 use App\Http\Controllers\back\LogoSectionController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PricingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PromoCodeController;
 use Illuminate\Support\Facades\Route;
@@ -76,6 +78,7 @@ Route::post('colors/{color}/toggle', [ColorController::class, 'toggleActive'])->
 Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
 Route::post('/logos/upload-temp', [OrderController::class, 'uploadTemp']);
 Route::post('/promo-codes/validate', [PromoCodeController::class, 'validateCode'])->name('promo-codes.validate');
+Route::get('/api/pricing-settings', [PricingController::class, 'getSettings'])->name('pricing.settings');
 
 
 
@@ -87,6 +90,11 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/orders/{order}',   [OrderController::class, 'destroy'])->name('orders.destroy');
     
     Route::resource('promo-codes', PromoCodeController::class);
+    
+    Route::get('/dashboard/pricing', [PricingController::class, 'index'])->name('pricing.index');
+    Route::post('/dashboard/pricing', [PricingController::class, 'update'])->name('pricing.update');
 });
+Route::post('/ai-chat', [AiChatController::class, 'handle'])->name('ai-chat');
+
 
 require __DIR__.'/auth.php';
