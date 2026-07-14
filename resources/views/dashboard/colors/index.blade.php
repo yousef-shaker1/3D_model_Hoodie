@@ -168,6 +168,7 @@
                                         <th>اللون</th>
                                         <th>الاسم</th>
                                         <th>كود اللون</th>
+                                        <th>المقاسات المتاحة</th>
                                         <th>الحالة</th>
                                         <th>الترتيب</th>
                                         <th class="text-center">التحكم</th>
@@ -183,6 +184,15 @@
                                             </td>
                                             <td>{{ $color->name }}</td>
                                             <td><code>{{ $color->hex_code }}</code></td>
+                                            <td>
+                                                @if(is_array($color->sizes) && count($color->sizes) > 0)
+                                                    @foreach($color->sizes as $size)
+                                                        <span class="badge bg-secondary">{{ $size }}</span>
+                                                    @endforeach
+                                                @else
+                                                    <span class="text-muted small">الكل</span>
+                                                @endif
+                                            </td>
                                             <td>
                                                 @if($color->active)
                                                     <span class="status-badge status-active">نشط</span>
@@ -218,53 +228,9 @@
                                                 </form>
                                             </td>
                                         </tr>
-
-                                        <!-- Edit Modal -->
-                                        <div class="modal fade" id="editColorModal{{ $color->id }}" tabindex="-1">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">تعديل اللون</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                    </div>
-                                                    <form action="{{ route('colors.update', $color->id) }}" method="POST">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <div class="modal-body">
-                                                            <div class="mb-3">
-                                                                <label class="form-label">اسم اللون</label>
-                                                                <input type="text" class="form-control" name="name" value="{{ $color->name }}" required>
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label class="form-label">كود اللون (HEX)</label>
-                                                                <div class="input-group">
-                                                                    <input type="color" class="form-control form-control-color" name="color_preview" value="{{ $color->hex_code }}" style="width: 60px;" onchange="document.getElementById('hex_code{{ $color->id }}').value = this.value">
-                                                                    <input type="text" class="form-control" name="hex_code" id="hex_code{{ $color->id }}" value="{{ $color->hex_code }}" required pattern="^#[0-9A-Fa-f]{6}$">
-                                                                </div>
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label class="form-label">الحالة</label>
-                                                                <select class="form-select" name="active">
-                                                                    <option value="1" {{ $color->active ? 'selected' : '' }}>نشط - يظهر في الموقع</option>
-                                                                    <option value="0" {{ !$color->active ? 'selected' : '' }}>غير نشط - لا يظهر</option>
-                                                                </select>
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label class="form-label">الترتيب</label>
-                                                                <input type="number" class="form-control" name="sort_order" value="{{ $color->sort_order }}">
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                                            <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
                                     @empty
                                         <tr>
-                                            <td colspan="8" class="text-center text-muted">
+                                            <td colspan="9" class="text-center text-muted">
                                                 لا توجد ألوان حاليًا
                                             </td>
                                         </tr>
@@ -282,6 +248,7 @@
                                         <th>اللون</th>
                                         <th>الاسم</th>
                                         <th>كود اللون</th>
+                                        <th>المقاسات المتاحة</th>
                                         <th>الترتيب</th>
                                         <th class="text-center">التحكم</th>
                                         <th class="text-center">Actions</th>
@@ -296,6 +263,15 @@
                                             </td>
                                             <td>{{ $color->name }}</td>
                                             <td><code>{{ $color->hex_code }}</code></td>
+                                            <td>
+                                                @if(is_array($color->sizes) && count($color->sizes) > 0)
+                                                    @foreach($color->sizes as $size)
+                                                        <span class="badge bg-secondary">{{ $size }}</span>
+                                                    @endforeach
+                                                @else
+                                                    <span class="text-muted small">الكل</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $color->sort_order }}</td>
                                             <td class="text-center">
                                                 <form action="{{ route('colors.toggle', $color->id) }}" method="POST">
@@ -326,7 +302,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center text-muted">
+                                            <td colspan="8" class="text-center text-muted">
                                                 لا توجد ألوان نشطة حالياً
                                             </td>
                                         </tr>
@@ -344,6 +320,7 @@
                                         <th>اللون</th>
                                         <th>الاسم</th>
                                         <th>كود اللون</th>
+                                        <th>المقاسات المتاحة</th>
                                         <th>الترتيب</th>
                                         <th class="text-center">التحكم</th>
                                         <th class="text-center">Actions</th>
@@ -358,6 +335,15 @@
                                             </td>
                                             <td>{{ $color->name }}</td>
                                             <td><code>{{ $color->hex_code }}</code></td>
+                                            <td>
+                                                @if(is_array($color->sizes) && count($color->sizes) > 0)
+                                                    @foreach($color->sizes as $size)
+                                                        <span class="badge bg-secondary">{{ $size }}</span>
+                                                    @endforeach
+                                                @else
+                                                    <span class="text-muted small">الكل</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $color->sort_order }}</td>
                                             <td class="text-center">
                                                 <form action="{{ route('colors.toggle', $color->id) }}" method="POST">
@@ -388,7 +374,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center text-muted">
+                                            <td colspan="8" class="text-center text-muted">
                                                 جميع الألوان نشطة حالياً
                                             </td>
                                         </tr>
@@ -435,6 +421,20 @@
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">المقاسات المتاحة لهذا اللون</label>
+                            <div class="d-flex gap-3 flex-wrap">
+                                @foreach(['S', 'M', 'L', 'XL', 'XXL'] as $size)
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="sizes[]" value="{{ $size }}" id="new_size_{{ $size }}" checked>
+                                    <label class="form-check-label" for="new_size_{{ $size }}">
+                                        {{ $size }}
+                                    </label>
+                                </div>
+                                @endforeach
+                            </div>
+                            <small class="text-muted">إذا لم تختر أي مقاس، فلن يظهر أي مقاس متاح.</small>
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">الترتيب</label>
                             <input type="number" class="form-control" name="sort_order" value="0">
                         </div>
@@ -447,6 +447,67 @@
             </div>
         </div>
     </div>
+
+    <!-- Edit Modals -->
+    @foreach($colors as $color)
+    <div class="modal fade" id="editColorModal{{ $color->id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">تعديل اللون</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('colors.update', $color->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">اسم اللون</label>
+                            <input type="text" class="form-control" name="name" value="{{ $color->name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">كود اللون (HEX)</label>
+                            <div class="input-group">
+                                <input type="color" class="form-control form-control-color" name="color_preview" value="{{ $color->hex_code }}" style="width: 60px;" onchange="document.getElementById('hex_code{{ $color->id }}').value = this.value">
+                                <input type="text" class="form-control" name="hex_code" id="hex_code{{ $color->id }}" value="{{ $color->hex_code }}" required pattern="^#[0-9A-Fa-f]{6}$">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الحالة</label>
+                            <select class="form-select" name="active">
+                                <option value="1" {{ $color->active ? 'selected' : '' }}>نشط - يظهر في الموقع</option>
+                                <option value="0" {{ !$color->active ? 'selected' : '' }}>غير نشط - لا يظهر</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">المقاسات المتاحة لهذا اللون</label>
+                            <div class="d-flex gap-3 flex-wrap">
+                                @php $availableSizes = is_array($color->sizes) ? $color->sizes : []; @endphp
+                                @foreach(['S', 'M', 'L', 'XL', 'XXL'] as $size)
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="sizes[]" value="{{ $size }}" id="size_{{ $size }}_{{ $color->id }}" {{ in_array($size, $availableSizes) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="size_{{ $size }}_{{ $color->id }}">
+                                        {{ $size }}
+                                    </label>
+                                </div>
+                                @endforeach
+                            </div>
+                            <small class="text-muted">إذا لم تختر أي مقاس، فلن يظهر أي مقاس متاح.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الترتيب</label>
+                            <input type="number" class="form-control" name="sort_order" value="{{ $color->sort_order }}">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endforeach
 
 </main>
 @endsection

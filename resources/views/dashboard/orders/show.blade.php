@@ -199,8 +199,8 @@
                                         @if($logo['view'] === $viewKey)
                                         <div style="
                                             position: absolute;
-                                            left: {{ $logo['x_percent'] }}%;
-                                            top: {{ $logo['y_percent'] }}%;
+                                            left: {{ ($logo['centerXPercent'] ?? $logo['x_percent']) - ($logo['width_percent'] / 2) }}%;
+                                            top: {{ ($logo['centerYPercent'] ?? $logo['y_percent']) - ($logo['height_percent'] / 2) }}%;
                                             width: {{ $logo['width_percent'] }}%;
                                             height: {{ $logo['height_percent'] }}%;
                                             transform: rotate({{ $logo['rotation'] }}deg);
