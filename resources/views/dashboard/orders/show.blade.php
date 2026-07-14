@@ -179,7 +179,7 @@
 
                         @foreach($views as $viewKey => $viewData)
                         <div class="col-6">
-                            <div class="view-card">
+                            <div class="view-card" style="container-type: inline-size;">
                                 <div class="view-label">{{ $viewData['label'] }}</div>
 
                                 <model-viewer
@@ -199,11 +199,19 @@
                                         @if($logo['view'] === $viewKey)
                                         <div style="
                                             position: absolute;
-                                            left: {{ ($logo['centerXPercent'] ?? $logo['x_percent']) - ($logo['width_percent'] / 2) }}%;
-                                            top: {{ ($logo['centerYPercent'] ?? $logo['y_percent']) - ($logo['height_percent'] / 2) }}%;
-                                            width: {{ $logo['width_percent'] }}%;
-                                            height: {{ $logo['height_percent'] }}%;
-                                            transform: rotate({{ $logo['rotation'] }}deg);
+                                            left: {{ $logo['x_percent'] ?? 0 }}%;
+                                            top: {{ $logo['y_percent'] ?? 0 }}%;
+                                            @if(isset($logo['width_percent']) && $logo['width_percent'] !== 'auto')
+                                                width: {{ $logo['width_percent'] }}%;
+                                            @else
+                                                width: auto;
+                                            @endif
+                                            @if(isset($logo['height_percent']) && $logo['height_percent'] !== 'auto')
+                                                height: {{ $logo['height_percent'] }}%;
+                                            @else
+                                                height: auto;
+                                            @endif
+                                            transform: rotate({{ $logo['rotation'] ?? 0 }}deg);
                                         ">
                                             @if(isset($logo['type']) && $logo['type'] === 'text')
                                                 <span style="
@@ -213,9 +221,16 @@
                                                     justify-content: center;
                                                     font-family: {{ $logo['font'] ?? 'Cairo, sans-serif' }};
                                                     color: {{ $logo['color'] ?? '#ffffff' }};
-                                                    font-size: {{ ($logo['fontSizeCqw'] ?? 5) * 2 }}px;
-                                                    font-weight: 600;
+                                                    font-size: {{ $logo['fontSizeCqw'] ?? 5 }}cqw;
+                                                    font-weight: normal;
                                                     text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                                                    line-height: 1.2;
+                                                    text-align: center;
+                                                    @if(isset($logo['isFixedWidth']) && $logo['isFixedWidth'])
+                                                        white-space: normal;
+                                                    @else
+                                                        white-space: nowrap;
+                                                    @endif
                                                 ">{{ $logo['text'] ?? '' }}</span>
                                             @else
                                                 <img src="{{ $logo['src'] }}"
@@ -237,19 +252,43 @@
         @foreach($order->logos as $logo)
             <div class="logo-card">
                 @if(isset($logo['type']) && $logo['type'] === 'text')
+                    @php
+                        $fsCqw = (isset($logo['fontSizeCqw']) && $logo['fontSizeCqw'] > 0) ? $logo['fontSizeCqw'] : 5;
+                        $wPct = (isset($logo['width_percent']) && $logo['width_percent'] !== 'auto') ? $logo['width_percent'] : null;
+                        $isFixed = isset($logo['isFixedWidth']) && $logo['isFixedWidth'];
+                        
+                        $baseFontSize = 24; 
+                        $computedWidth = 'auto';
+                        
+                        if ($isFixed && $wPct) {
+                            $ratio = $wPct / $fsCqw;
+                            $computedWidth = ($baseFontSize * $ratio) . 'px';
+                        }
+                    @endphp
                     <div style="
-                        width:120px; height:120px; 
+                        min-width: 120px; min-height: 120px;
                         display: flex; align-items: center; justify-content: center;
-                        border:1px solid #ddd; border-radius:8px;
+                        border: 1px solid #ddd; border-radius: 8px;
                         background: #000000;
-                        font-family: {{ $logo['font'] ?? 'Cairo, sans-serif' }};
-                        color: {{ $logo['color'] ?? '#ffffff' }};
-                        font-size: 18px;
-                        font-weight: 600;
-                        text-align: center;
-                        padding: 10px;
+                        padding: 20px;
                         overflow: hidden;
-                    ">{{ $logo['text'] ?? '' }}</div>
+                    ">
+                        <span style="
+                            width: {{ $computedWidth }};
+                            font-family: {{ $logo['font'] ?? 'Cairo, sans-serif' }};
+                            color: {{ $logo['color'] ?? '#ffffff' }};
+                            font-size: {{ $baseFontSize }}px;
+                            font-weight: normal;
+                            text-align: center;
+                            line-height: 1.2;
+                            @if($isFixed)
+                                white-space: normal;
+                                word-wrap: break-word;
+                            @else
+                                white-space: nowrap;
+                            @endif
+                        ">{{ $logo['text'] ?? '' }}</span>
+                    </div>
                 @else
                     <img
                         src="{{ $logo['src'] }}"
@@ -271,11 +310,17 @@
                     <span>الموضع Y: {{ $logo['y_percent'] }}%</span>
                     <span>الدوران: {{ $logo['rotation'] }}°</span>
                 </div>
+                <div class="mt-2 text-center w-100">
                 @if(!isset($logo['type']) || $logo['type'] !== 'text')
-                <a href="#" onclick="downloadImage('{{ $logo['src'] }}', '{{ basename(parse_url($logo['src'], PHP_URL_PATH)) }}')" >
-    تحميل الصورة
-</a>
+                    <button type="button" onclick="downloadImage('{{ $logo['src'] }}', '{{ basename(parse_url($logo['src'], PHP_URL_PATH)) }}')" class="btn btn-sm btn-primary">
+                        <i class="bi bi-download"></i> تحميل الصورة
+                    </button>
+                @else
+                    <button type="button" data-logo="{{ json_encode($logo) }}" onclick="downloadTextLogoDTF(event)" class="btn btn-sm btn-success">
+                        <i class="bi bi-printer"></i> تحميل ملف الطباعة DTF
+                    </button>
                 @endif
+                </div>
             </div>
         @endforeach
     </div>
@@ -366,6 +411,114 @@
             // Fallback: open in new tab
             window.open(url, '_blank');
         }
+    }
+
+    async function downloadTextLogoDTF(event) {
+        const btn = event.currentTarget;
+        const logoDataStr = btn.getAttribute('data-logo');
+        const d = JSON.parse(logoDataStr);
+        
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري التحضير...';
+        btn.disabled = true;
+
+        try {
+            // خط كبير جداً لاستخراج جودة عالية جدا للطباعة
+            const fontPx = 2000; 
+            const fontFamily = d.font || "'Cairo', sans-serif";
+            
+            try {
+                await document.fonts.load(`${fontPx}px ${fontFamily}`);
+            } catch (e) {}
+            
+            // كانفاس وهمي لحساب المقاسات
+            const tCanvas = document.createElement('canvas');
+            const tCtx = tCanvas.getContext('2d');
+            tCtx.font = `${fontPx}px ${fontFamily}`;
+            
+            const fsCqw = (d.fontSizeCqw || 5);
+            const wPct = (d.width_percent && d.width_percent !== 'auto') ? d.width_percent : null;
+            const isFixed = d.isFixedWidth || false;
+            
+            let lw = 9999999;
+            if (isFixed && wPct) {
+                const ratio = wPct / fsCqw;
+                lw = fontPx * ratio;
+            }
+            
+            const words = (d.text || '').split(' ');
+            const lines = [];
+            let currentLine = words[0] || '';
+
+            for (let i = 1; i < words.length; i++) {
+                let word = words[i];
+                let width = tCtx.measureText(currentLine + " " + word).width;
+                if (isFixed && width > lw) {
+                    lines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine += " " + word;
+                }
+            }
+            if (currentLine) lines.push(currentLine);
+
+            const lineHeight = fontPx * 1.2;
+            const totalHeight = lines.length * lineHeight;
+            
+            let maxLineWidth = 0;
+            for(let l of lines) {
+                let w = tCtx.measureText(l).width;
+                if(w > maxLineWidth) maxLineWidth = w;
+            }
+
+            // زيادة الـ padding بشكل كبير ليتناسب مع الخطوط الكبيرة ويمنع قص الحواف
+            const padding = fontPx * 0.5; 
+            const canvasWidth = maxLineWidth + padding * 2;
+            const canvasHeight = totalHeight + padding * 2;
+            
+            // الكانفاس الحقيقي
+            const canvas = document.createElement('canvas');
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = `${fontPx}px ${fontFamily}`;
+            ctx.fillStyle = d.color || '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.direction = 'rtl';
+            
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            ctx.save();
+            ctx.translate(cx, cy);
+            
+            // إيقاف الدوران هنا أفضل حتى تكون الصورة مقصوصة على قد الكلام بالظبط 
+            // يمكن للعميل تدويرها براحته على برنامج الطباعة
+            
+            const startY = - (totalHeight / 2) + (lineHeight / 2);
+            
+            for (let i = 0; i < lines.length; i++) {
+                ctx.fillText(lines[i], 0, startY + (i * lineHeight));
+            }
+            ctx.restore();
+            
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `DTF_Text_${d.view || 'front'}_${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch(e) {
+            console.error(e);
+            alert('حدث خطأ أثناء استخراج الصورة للطباعة.');
+        }
+        
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
 </script>
 @endsection

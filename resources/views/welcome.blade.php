@@ -427,7 +427,7 @@ modelViewer.addEventListener('camera-change', () => {
     if (!isFreeControlMode) return;
     const orbit = modelViewer.getCameraOrbit();
     const deg = ((orbit.theta * 180 / Math.PI) % 360 + 360) % 360;
-    const v = deg >= 315 || deg < 45 ? 'front' : deg < 135 ? 'right' : deg < 225 ? 'back' : 'left';
+    const v = (deg >= 315 || deg < 45) ? 'front' : (deg >= 45 && deg < 135) ? 'left' : (deg >= 135 && deg < 225) ? 'back' : 'right';
     if (v !== currentView) { currentView = v; updateVisibleLogos(); }
 });
 
@@ -1094,14 +1094,73 @@ async function compositeLogoOnImage(bgDataUrl, viewKey) {
 
 // دالة جديدة لرسم النص على الكانفاس
 async function drawTextOnCanvas(ctx, d, size) {
-    const fontPx = (d.fontSizeCqw / 100) * size; // نفس نسبة الـ cqw في الـ DOM
+    // الحصول على العنصر الفعلي في DOM
+    const el = logosOverlay.querySelector(`.logo-on-hoodie[data-id="${d.id}"]`);
+    
+    if (!el) {
+        // إذا لم نجد العنصر، نستخدم الحساب القديم
+        const fontPx = (d.fontSizeCqw / 100) * size;
+        const fontFamily = d.font || "'Cairo', sans-serif";
+        try {
+            await document.fonts.load(`${fontPx}px ${fontFamily}`);
+        } catch (e) {}
+        
+        const lx = (d.xPercent / 100) * size;
+        const ly = (d.yPercent / 100) * size;
+        
+        ctx.font = `${fontPx}px ${fontFamily}`;
+        const textMetrics = ctx.measureText(d.text);
+        const textWidth = textMetrics.width;
+        const textHeight = fontPx;
+        
+        const cx = lx + textWidth / 2;
+        const cy = ly + textHeight / 2;
+        
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate((d.rotation || 0) * Math.PI / 180);
+        ctx.font = `${fontPx}px ${fontFamily}`;
+        ctx.fillStyle = d.color || '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.direction = 'rtl';
+        ctx.fillText(d.text, 0, 0);
+        ctx.restore();
+        return;
+    }
+    
+    // استخدام العرض والارتفاع الفعلي من DOM
+    const elRect = el.getBoundingClientRect();
+    const containerRect = hoodieWrapper.getBoundingClientRect();
+    
+    // حساب نسبة التكبير
+    const scale = size / containerRect.width;
+    
+    // حجم الخط الفعلي في DOM
+    const span = el.querySelector('span');
+    const computedStyle = window.getComputedStyle(span);
+    const realFontSize = parseFloat(computedStyle.fontSize);
+    
+    // حجم الخط في الكانفاس
+    const fontPx = realFontSize * scale;
+    
     const fontFamily = d.font || "'Cairo', sans-serif";
     try {
-        // نتأكد إن الخط اتحمّل قبل الرسم، وإلا هيرسم بخط بديل
         await document.fonts.load(`${fontPx}px ${fontFamily}`);
     } catch (e) {}
-    const cx = (d.centerXPercent / 100) * size;
-    const cy = (d.centerYPercent / 100) * size;
+    
+    // Site in DOM
+    const lx = (d.xPercent / 100) * size;
+    const ly = (d.yPercent / 100) * size;
+    
+    // Width and height in canvas
+    const lw = (elRect.width / containerRect.width) * size;
+    const lh = (elRect.height / containerRect.height) * size;
+    
+    // Center
+    const cx = lx + lw / 2;
+    const cy = ly + lh / 2;
+    
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate((d.rotation || 0) * Math.PI / 180);
@@ -1110,7 +1169,34 @@ async function drawTextOnCanvas(ctx, d, size) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.direction = 'rtl';
-    ctx.fillText(d.text, 0, 0);
+
+    // Wrap text if needed
+    const words = d.text.split(' ');
+    const lines = [];
+    let currentLine = words[0] || '';
+
+    for (let i = 1; i < words.length; i++) {
+        let word = words[i];
+        let width = ctx.measureText(currentLine + " " + word).width;
+        // if d.isFixedWidth is false, it shouldn't wrap (unless explicit newlines but we handle words here)
+        // wait, the DOM wraps based on lw
+        if (d.isFixedWidth && width > lw) {
+            lines.push(currentLine);
+            currentLine = word;
+        } else {
+            currentLine += " " + word;
+        }
+    }
+    if (currentLine) lines.push(currentLine);
+
+    const lineHeight = fontPx * 1.2;
+    const totalHeight = lines.length * lineHeight;
+    const startY = - (totalHeight / 2) + (lineHeight / 2);
+
+    for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], 0, startY + (i * lineHeight));
+    }
+    
     ctx.restore();
 }
 
@@ -1195,9 +1281,11 @@ async function submitOrder() {
             view:l.view,
             x_percent:parseFloat(parseFloat(l.xPercent || 0).toFixed(2)),
             y_percent:parseFloat(parseFloat(l.yPercent || 0).toFixed(2)),
-            width_percent:parseFloat(parseFloat(l.widthPercent || 0).toFixed(2)),
-            height_percent:parseFloat(parseFloat(l.heightPercent || 0).toFixed(2)),
-            rotation:l.rotation||0
+            width_percent:l.widthPercent === 'auto' ? 'auto' : parseFloat(parseFloat(l.widthPercent || 0).toFixed(2)),
+            height_percent:l.heightPercent === 'auto' ? 'auto' : parseFloat(parseFloat(l.heightPercent || 0).toFixed(2)),
+            rotation:l.rotation||0,
+            centerXPercent:parseFloat(parseFloat(l.centerXPercent || 0).toFixed(2)),
+            centerYPercent:parseFloat(parseFloat(l.centerYPercent || 0).toFixed(2))
         };
         
         if (l.type === 'text') {
