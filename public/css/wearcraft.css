@@ -504,9 +504,9 @@
         body.free-control-active .logo-on-hoodie .delete-btn,
         body.free-control-active .logo-on-hoodie .resize-handle { display: none !important; }
 
-        .logo-on-hoodie { position: absolute; pointer-events: auto; cursor: move; user-select: none; opacity: 0; transition: opacity 0.3s; border: 1px dashed transparent; box-sizing: border-box; }
+        .logo-on-hoodie { position: absolute; pointer-events: none; cursor: move; user-select: none; opacity: 0; transition: opacity 0.3s; border: 1px dashed transparent; box-sizing: border-box; }
         .logo-on-hoodie:hover { border-color: rgba(129, 140, 248, 0.6); }
-        .logo-on-hoodie.active { opacity: 1; }
+        .logo-on-hoodie.active { opacity: 1; pointer-events: auto; }
         .logo-on-hoodie.selected {
             border-style: solid;
             border-color: var(--gold);
@@ -1114,4 +1114,97 @@
             }
             .canvas-wrap { padding: 8px; }
             .view-btn { padding: 5px 8px; font-size: 9px; }
+        }
+
+        /* ══════════════════════════════════════════
+           PRICING CARD — السعر الديناميكي
+        ══════════════════════════════════════════ */
+        .price-card {
+            margin: 14px 0 6px;
+            background: linear-gradient(135deg,
+                rgba(99,102,241,0.10) 0%,
+                rgba(129,140,248,0.06) 100%
+            );
+            border: 1px solid rgba(129,140,248,0.22);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            transition: border-color .3s;
+        }
+        .price-card:hover {
+            border-color: rgba(129,140,248,0.45);
+        }
+        .price-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px 8px;
+            border-bottom: 1px solid rgba(129,140,248,0.12);
+        }
+        .price-card-icon { font-size: 15px; }
+        .price-card-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--gold-light);
+            letter-spacing: .4px;
+            text-transform: uppercase;
+        }
+        .price-rows {
+            padding: 10px 14px 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .price-row-label {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .price-row-val {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink-soft);
+        }
+        .price-row-val.print-val {
+            color: var(--gold-light);
+        }
+        .price-divider {
+            height: 1px;
+            background: rgba(129,140,248,0.14);
+            margin: 4px 0;
+        }
+        .total-row .price-row-label {
+            color: var(--ink-soft);
+            font-weight: 700;
+        }
+        .total-row .total-val {
+            font-size: 16px;
+            font-weight: 900;
+            color: var(--gold-light);
+            text-shadow: 0 0 12px rgba(129,140,248,0.4);
+            animation: priceGlow .4s ease;
+        }
+        @keyframes priceGlow {
+            from { text-shadow: 0 0 0 rgba(129,140,248,0); transform: scale(1); }
+            50%  { text-shadow: 0 0 20px rgba(129,140,248,0.7); transform: scale(1.06); }
+            to   { text-shadow: 0 0 12px rgba(129,140,248,0.4); transform: scale(1); }
+        }
+        .price-dims {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px 4px;
+            font-size: 11px;
+            color: var(--muted);
+            border-top: 1px solid rgba(129,140,248,0.10);
+        }
+        .dims-icon { font-size: 12px; }
+        .price-note {
+            padding: 4px 14px 10px;
+            font-size: 10px;
+            color: var(--muted-light);
+            font-style: italic;
         }

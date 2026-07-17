@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Color;
 use App\Models\LogoSection;
+use App\Models\PricingSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -21,6 +22,9 @@ class IndexController extends Controller
 
         $governorates = \App\Models\Governorate::where('is_active', true)->orderBy('name')->get();
 
-        return view('welcome', compact('sections', 'colors', 'governorates'));
+        $pricingSettings = PricingSetting::current();
+
+        return view('welcome', compact('sections', 'colors', 'governorates', 'pricingSettings'));
     }
 }
+

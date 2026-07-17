@@ -219,6 +219,12 @@
               <span>أكواد الخصم</span>
           </a>
       </li>
+      <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('pricing.index') }}">
+              <i class="bi bi-tag"></i>
+              <span>اسعار الطباعه</span>
+          </a>
+      </li>
   {{--
       <li class="nav-item">
         <a class="nav-link collapsed" href="{{ route('orders.index') }}">
