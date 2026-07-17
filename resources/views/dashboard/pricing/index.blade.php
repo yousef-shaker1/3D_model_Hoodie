@@ -238,8 +238,8 @@
                             <div class="field-group" style="margin:0;">
                                 <label>أقصى عرض للصور</label>
                                 <div class="input-addon">
-                                    <input type="number" name="max_width_cm" id="f_max_width"
-                                           value="{{ $settings['max_width_cm'] }}"
+                                    <input type="number" name="max_image_width_cm" id="f_max_image_width"
+                                           value="{{ $settings['max_image_width_cm'] }}"
                                            min="1" max="100" step="any" required>
                                     <span class="unit">سم</span>
                                 </div>
@@ -247,8 +247,8 @@
                             <div class="field-group" style="margin:0;">
                                 <label>أقصى ارتفاع للصور</label>
                                 <div class="input-addon">
-                                    <input type="number" name="max_height_cm" id="f_max_height"
-                                           value="{{ $settings['max_height_cm'] }}"
+                                    <input type="number" name="max_image_height_cm" id="f_max_image_height"
+                                           value="{{ $settings['max_image_height_cm'] }}"
                                            min="1" max="100" step="any" required>
                                     <span class="unit">سم</span>
                                 </div>
@@ -280,6 +280,63 @@
                         <div style="margin-top:14px; font-size:11px; color:var(--pr-muted);">
                             هذه الحدود تُستخدم للتحقق من أبعاد التصميم وإظهار تحذيرات للعميل عند تجاوزها.
                         </div>
+                    </div>
+                </div>
+
+                {{-- مستويات التسعير (Pricing Tiers) - فورم مستقلة --}}
+                <div class="pr-card">
+                    <div class="pr-card-head">
+                        <div class="pr-card-icon blue">📊</div>
+                        <div class="pr-card-title">مستويات التسعير حسب المساحة</div>
+                    </div>
+                    <div class="pr-card-body">
+                        <div id="tiers-success" style="display:none;" class="alert-success-pr" style="margin-bottom:14px;"></div>
+                        @if(session('success_tiers'))
+                            <div class="alert-success-pr" style="margin-bottom:14px;">✓ {{ session('success_tiers') }}</div>
+                        @endif
+
+                        <div class="info-box" style="margin-bottom:16px;">
+                            <strong>كيف يعمل؟</strong><br>
+                            يتم تحديد سعر الطباعة بناءً على مساحة التصميم. كل مستوى (tier) له حد أقصى للمساحة وسعر ثابت.
+                        </div>
+
+                        <div id="tiersContainer">
+                            @foreach($tiers as $index => $tier)
+                            <div class="tier-row" data-index="{{ $index }}">
+                                <input type="hidden" name="pricing_tiers[{{ $index }}][id]" value="{{ $tier->id }}">
+                                <div style="display:grid; grid-template-columns:1fr 1fr auto; gap:10px; margin-bottom:10px;">
+                                    <div>
+                                        <label style="font-size:11px; font-weight:700; color:var(--pr-muted);">أقصى مساحة (سم²)</label>
+                                        <input type="number" name="pricing_tiers[{{ $index }}][max_area_cm2]" 
+                                               value="{{ $tier->max_area_cm2 }}"
+                                               min="1" step="1" class="calc-input">
+                                    </div>
+                                    <div>
+                                        <label style="font-size:11px; font-weight:700; color:var(--pr-muted);">السعر (ج.م)</label>
+                                        <input type="number" name="pricing_tiers[{{ $index }}][price]" 
+                                               value="{{ $tier->price }}"
+                                               min="1" step="1" class="calc-input">
+                                    </div>
+                                    <div style="display:flex; align-items:flex-end;">
+                                        <button type="button" onclick="removeTier(this)" 
+                                                style="padding:8px 12px; background:#ef4444; color:#fff; border:none; border-radius:8px; cursor:pointer;">
+                                            ✕
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+
+                        <button type="button" onclick="addTier()"
+                                style="width:100%; padding:10px; background:var(--pr-accent); color:#fff; border:none; border-radius:10px; cursor:pointer; font-weight:700; margin-top:10px;">
+                            + إضافة مستوى جديد
+                        </button>
+
+                        <button type="button" onclick="saveTiers(this)"
+                                style="width:100%; padding:11px; background:linear-gradient(135deg,#0ec9a0,#059669); color:#fff; border:none; border-radius:10px; cursor:pointer; font-weight:700; margin-top:10px; font-family:'Cairo',sans-serif; font-size:14px;">
+                            💾 حفظ المستويات
+                        </button>
                     </div>
                 </div>
 
@@ -376,6 +433,76 @@
 
 @section('js')
 <script>
+let tierIndex = {{ isset($tiers) ? $tiers->count() : 0 }};
+
+function addTier() {
+    const container = document.getElementById('tiersContainer');
+    const newRow = document.createElement('div');
+    newRow.className = 'tier-row';
+    newRow.style.marginBottom = '10px';
+    newRow.innerHTML = `
+        <input type="hidden" name="pricing_tiers[${tierIndex}][id]" value="">
+        <div style="display:grid; grid-template-columns:1fr 1fr auto; gap:10px;">
+            <div>
+                <label style="font-size:11px; font-weight:700; color:var(--pr-muted);">أقصى مساحة (سم²)</label>
+                <input type="number" name="pricing_tiers[${tierIndex}][max_area_cm2]" value="100" min="1" step="1" class="calc-input">
+            </div>
+            <div>
+                <label style="font-size:11px; font-weight:700; color:var(--pr-muted);">السعر (ج.م)</label>
+                <input type="number" name="pricing_tiers[${tierIndex}][price]" value="30" min="1" step="1" class="calc-input">
+            </div>
+            <div style="display:flex; align-items:flex-end;">
+                <button type="button" onclick="removeTier(this)"
+                        style="padding:8px 12px; background:#ef4444; color:#fff; border:none; border-radius:8px; cursor:pointer;">
+                    ✕
+                </button>
+            </div>
+        </div>
+    `;
+    container.appendChild(newRow);
+    tierIndex++;
+}
+
+function removeTier(btn) {
+    btn.closest('.tier-row').remove();
+}
+
+function saveTiers(btn) {
+    const rows   = document.querySelectorAll('#tiersContainer .tier-row');
+    const data   = new FormData();
+    data.append('_token', '{{ csrf_token() }}');
+
+    let idx = 0;
+    rows.forEach(row => {
+        const id    = row.querySelector('.tier-id')?.value ?? '';
+        const area  = row.querySelector('.tier-area')?.value ?? '';
+        const price = row.querySelector('.tier-price')?.value ?? '';
+        if (!area || !price) return;
+        data.append(`pricing_tiers[${idx}][id]`,           id);
+        data.append(`pricing_tiers[${idx}][max_area_cm2]`, area);
+        data.append(`pricing_tiers[${idx}][price]`,        price);
+        idx++;
+    });
+
+    const orig = btn.innerHTML;
+    btn.disabled  = true;
+    btn.innerHTML = '⏳ جاري الحفظ...';
+
+    fetch('{{ route("pricing.tiers.update") }}', { method: 'POST', body: data })
+        .then(res => {
+            if (res.redirected) {
+                const box = document.getElementById('tiers-success');
+                box.textContent = '✓ تم حفظ المستويات بنجاح';
+                box.style.display = 'flex';
+                setTimeout(() => box.style.display = 'none', 3000);
+            } else {
+                alert('حدث خطأ أثناء الحفظ');
+            }
+        })
+        .catch(() => alert('حدث خطأ في الاتصال'))
+        .finally(() => { btn.disabled = false; btn.innerHTML = orig; });
+}
+
 const EXAMPLES = [
     { label: 'لوجو جيب (5×5 سم)',   w: 5,    h: 5    },
     { label: 'صدر (10×10 سم)', w: 10,   h: 10   },

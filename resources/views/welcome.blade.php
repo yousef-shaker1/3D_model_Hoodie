@@ -383,6 +383,7 @@ const PRICING_SETTINGS = {
     maxTextHeightCm:      {{ $pricingSettings['max_text_height_cm'] ?? 10.0 }},
     maxImageWidthCm:      {{ $pricingSettings['max_image_width_cm'] ?? 30.0 }},
     maxImageHeightCm:     {{ $pricingSettings['max_image_height_cm'] ?? 35.0 }},
+    pricingTiers:         @json($pricingSettings['pricing_tiers']),
 };
 
 /* ════ AI CHAT WIDGET ════ */
@@ -1514,10 +1515,9 @@ function calcDesignDimsCm() {
         if (viewHasLogos && maxX > minX && maxY > minY) {
             const vWidthCm = (maxX - minX) * scaleX;
             const vHeightCm = (maxY - minY) * scaleY;
-            // العرض هيكون أقصى عرض موجود في أي وجه
+            // العرض والارتفاع بناءً على أقصى قيمة في أي وجه
             totalWidthCm = Math.max(totalWidthCm, vWidthCm);
-            // الارتفاع بنجمعه (لأن الطباعة بتكون ورا بعض للمسافات المختلفة)
-            totalHeightCm += vHeightCm;
+            totalHeightCm = Math.max(totalHeightCm, vHeightCm);
         }
     }
 
@@ -1570,8 +1570,8 @@ function validateDesignDimensions() {
         const elH = hPx * scaleY;
 
         if (d.type === 'image' && !imgExceeded) {
-            if (elW > PRICING_SETTINGS.maxWidthCm || elH > PRICING_SETTINGS.maxHeightCm) {
-                errors.push(`إحدى الصور تتجاوز الحدود المسموحة (${PRICING_SETTINGS.maxWidthCm}×${PRICING_SETTINGS.maxHeightCm} سم)`);
+            if (elW > PRICING_SETTINGS.maxImageWidthCm || elH > PRICING_SETTINGS.maxImageHeightCm) {
+                errors.push(`إحدى الصور تتجاوز الحدود المسموحة (${PRICING_SETTINGS.maxImageWidthCm}×${PRICING_SETTINGS.maxImageHeightCm} سم)`);
                 imgExceeded = true;
             }
         } else if (d.type === 'text' && !txtExceeded) {
@@ -1589,24 +1589,28 @@ function validateDesignDimensions() {
 }
 
 /**
- * حساب سعر الطباعة بالمعادلة الصحيحة (المتر الطولي):
- *   تكلفة  = (ارتفاع التصميم بالمتر) × سعر المتر الطولي
- *   بيع    = max(minPrice, تكلفة × (1 + margin/100))
- *   تقريب  = لأقرب 5 جنيه للأعلى
+ * حساب سعر الطباعة باستخدام pricing tiers
+ * النظام يعتمد على مستويات (tiers) بناءً على المساحة
  */
 function calcPrintPrice(widthCm, heightCm) {
     const ps = PRICING_SETTINGS;
+    const tiers = ps.pricingTiers || [];
+    const area = widthCm * heightCm;
     
-    // التكلفة الفعلية (بناءً على الارتفاع فقط كما هو متبع في DTF)
-    const rawCost = (heightCm / 100) * ps.dtfPricePerMeter;
+    console.log('Pricing Tiers:', tiers);
+    console.log('Area:', area);
     
-    // سعر البيع مضافاً إليه نسبة الربح
-    const sell = rawCost * (1 + ps.profitMarginPercent / 100);
+    // البحث عن tier المناسب
+    let price = ps.minPrintPrice || 30; // سعر افتراضي
+    for (const tier of tiers) {
+        if (area <= tier.max_area_cm2) {
+            price = tier.price;
+            break;
+        }
+    }
     
-    // تطبيق الحد الأدنى والتقريب
-    const final = Math.ceil(Math.max(ps.minPrintPrice, sell) / 5) * 5;
-    
-    return { rawCost, final };
+    console.log('Calculated Price:', price);
+    return { rawCost: price, final: price };
 }
 
 /**

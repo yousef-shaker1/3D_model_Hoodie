@@ -93,6 +93,8 @@ Route::middleware(['auth'])->group(function () {
     
     Route::get('/dashboard/pricing', [PricingController::class, 'index'])->name('pricing.index');
     Route::post('/dashboard/pricing', [PricingController::class, 'update'])->name('pricing.update');
+    Route::post('/dashboard/pricing/tiers', [PricingController::class, 'updateTiers'])->name('pricing.tiers.update');
+    Route::delete('/dashboard/pricing/tiers/{tier}', [PricingController::class, 'destroyTier'])->name('pricing.tiers.destroy');
 });
 Route::post('/ai-chat', [AiChatController::class, 'handle'])->name('ai-chat');
 
