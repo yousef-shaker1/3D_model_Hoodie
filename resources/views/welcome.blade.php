@@ -275,13 +275,161 @@
     </div>
 </div>
 
-<!-- MOBILE LOGO TOOLBAR -->
+<!-- DESKTOP: MOBILE LOGO TOOLBAR (hidden on mobile, replaced by mob-left-tools) -->
 <div class="logo-toolbar" id="logoToolbar">
     <button class="toolbar-btn" id="rotateCCW" title="تدوير يسار">↶</button>
     <button class="toolbar-btn" id="zoomOut" title="تصغير">−</button>
     <button class="toolbar-btn" id="zoomIn" title="تكبير">+</button>
     <button class="toolbar-btn" id="rotateCW" title="تدوير يمين">↷</button>
     <button class="toolbar-btn danger" id="deleteLogo" title="حذف">✕</button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MOBILE LAYOUT (≤768px)
+══════════════════════════════════════════════ -->
+
+<!-- MOB: Top bar -->
+<div class="mob-topbar" id="mobTopbar">
+    <div class="mob-views-row">
+        <button class="mob-view-btn active" data-view="front">الوش</button>
+        <button class="mob-view-btn" data-view="back">الظهر</button>
+        <button class="mob-view-btn" data-view="left">اليسار</button>
+        <button class="mob-view-btn" data-view="right">اليمين</button>
+        <div class="mob-sep"></div>
+        <button class="mob-ctrl-btn" id="mobFreeBtn">⊙</button>
+        <button class="mob-ctrl-btn" id="mobPreviewBtn">▶</button>
+        <button class="mob-ctrl-btn mob-theme-btn" id="mobThemeBtn" onclick="toggleTheme()">🌙</button>
+    </div>
+</div>
+
+<!-- MOB: Canvas row (tools | model | colors) -->
+<div class="mob-canvas-row" id="mobCanvasRow">
+
+    <!-- أدوات يسار -->
+    <div class="mob-left-tools" id="mobLeftTools">
+        <button class="mob-tool-btn" id="mobRotateCCW">↶</button>
+        <button class="mob-tool-btn" id="mobZoomOut">−</button>
+        <button class="mob-tool-btn" id="mobZoomIn">+</button>
+        <button class="mob-tool-btn" id="mobRotateCW">↷</button>
+        <button class="mob-tool-btn danger" id="mobDeleteLogo">✕</button>
+    </div>
+
+    <!-- النموذج 3D — يُحقن هنا بالـ JS على موبايل -->
+    <div class="mob-model-slot" id="mobModelSlot"></div>
+
+    <!-- ألوان يمين -->
+    <div class="mob-colors-col" id="mobColorsCol">
+        @foreach($colors as $color)
+        <div class="mob-color-dot {{ $color->hex_code === '#1a1a1a' ? 'active' : '' }}"
+             data-color="{{ $color->hex_code }}"
+             data-sizes="{{ json_encode($color->sizes ?? []) }}"
+             onclick="mobSelectColor(this)"
+             title="{{ $color->name }}">
+            <span style="background:{{ $color->hex_code }}"></span>
+        </div>
+        @endforeach
+    </div>
+</div>
+
+<!-- MOB: Price strip -->
+<div class="mob-price-strip" id="mobPriceStrip">
+    <div class="mob-price-cell">
+        <div class="mob-price-lbl">التيشيرت</div>
+        <div class="mob-price-num" id="mobBaseVal">{{ $pricingSettings['tshirt_base_price'] }}</div>
+    </div>
+    <div class="mob-price-op">+</div>
+    <div class="mob-price-cell">
+        <div class="mob-price-lbl">الطباعة</div>
+        <div class="mob-price-num print" id="mobPrintVal">—</div>
+    </div>
+    <div class="mob-price-op">=</div>
+    <div class="mob-price-cell highlight">
+        <div class="mob-price-lbl">الإجمالي</div>
+        <div class="mob-price-num" id="mobTotalVal">{{ $pricingSettings['tshirt_base_price'] }}</div>
+    </div>
+    <div class="mob-price-msg" id="mobPriceMsg"></div>
+</div>
+
+<!-- MOB: Sizes + dims strip -->
+<div class="mob-sizes-strip" id="mobSizesStrip">
+    <span class="mob-sizes-lbl">المقاس:</span>
+    <div class="mob-sizes-list" id="mobSizesList"></div>
+    <div class="mob-dims-badge" id="mobDimsBadge" style="display:none"></div>
+</div>
+
+<!-- MOB: Bottom Tab bar -->
+<div class="mob-tabbar" id="mobTabbar">
+    <button class="mob-tab active" data-tab="logos" onclick="mobSwitchTab('logos')">
+        <span class="mob-tab-icon">🖼️</span>
+        <span>اللوجوهات</span>
+    </button>
+    <button class="mob-tab" data-tab="text" onclick="mobSwitchTab('text')">
+        <span class="mob-tab-icon">T</span>
+        <span>نص</span>
+    </button>
+    <button class="mob-tab" data-tab="upload" onclick="mobSwitchTab('upload')">
+        <span class="mob-tab-icon">📎</span>
+        <span>صورة</span>
+    </button>
+</div>
+
+<!-- MOB: Tab Panels -->
+<div class="mob-panels" id="mobPanels">
+
+    <!-- Logos panel -->
+    <div class="mob-panel active" id="mobPanelLogos">
+        <div class="mob-sections-bar" id="mobSectionsBar">
+            @foreach($sections as $section)
+            <div class="mob-sec-chip {{ $loop->first ? 'active' : '' }}"
+                 data-section-id="{{ $section->id }}"
+                 onclick="mobSelectSection(this, {{ $section->id }})">
+                @if($section->logo)
+                    <img src="{{ asset('storage/' . $section->logo) }}" alt="{{ $section->name }}">
+                @endif
+                <span>{{ $section->name }}</span>
+            </div>
+            @endforeach
+        </div>
+        <div class="mob-logos-grid" id="mobLogosGrid"></div>
+    </div>
+
+    <!-- Text panel -->
+    <div class="mob-panel" id="mobPanelText">
+        <div class="mob-text-panel">
+            <input type="text" class="mob-text-input" id="mobTextInput"
+                   placeholder="اكتب النص هنا..."
+                   oninput="syncMobText()"
+                   onkeydown="if(event.key==='Enter') handleAddText()">
+            <div class="mob-text-controls">
+                <button type="button" class="mob-font-btn" onclick="toggleFontPicker()">
+                    <span id="mobFontLabel">Cairo</span> ▾
+                </button>
+                <input type="color" class="mob-color-dot-input" id="mobTextColor" value="#ffffff"
+                       oninput="syncMobTextColor()">
+                <label class="mob-tashkeel">
+                    <input type="checkbox" id="mobTashkeel" onchange="syncMobTashkeel()">
+                    <span>تشكيل</span>
+                </label>
+                <!-- <button class="mob-add-btn" onclick="handleAddText()">+ إضافة</button> -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload panel -->
+    <div class="mob-panel" id="mobPanelUpload">
+        <label class="mob-upload-area" for="uploadLogoInput">
+            <span class="mob-upload-icon">📎</span>
+            <span class="mob-upload-title">ارفع صورة من جهازك</span>
+            <span class="mob-upload-hint">سيتم إزالة الخلفية تلقائياً</span>
+        </label>
+    </div>
+
+</div>
+
+<!-- MOB: Bottom action buttons -->
+<div class="mob-actions" id="mobActions">
+    <button class="mob-act-btn secondary" onclick="openExportModal()">⬇ تحميل التصميم</button>
+    <button class="mob-act-btn primary" onclick="openOrderModal()">🛒 إتمام الطلب</button>
 </div>
 
 <!-- ORDER MODAL -->
@@ -1884,6 +2032,327 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn) btn.innerHTML = '☀️ رصاصي';
     }
 });
+
+/* ════════════════════════════════════════════
+   MOBILE LAYOUT — JS wiring
+════════════════════════════════════════════ */
+(function() {
+    const isMob = () => window.innerWidth <= 768;
+
+    /* ── Move model-viewer into mob slot on mobile ── */
+    function initMobLayout() {
+        if (!isMob()) return;
+        const slot = document.getElementById('mobModelSlot');
+        const wrapper = document.getElementById('hoodieWrapper');
+        if (slot && wrapper && !slot.contains(wrapper)) {
+            slot.appendChild(wrapper);
+        }
+        // Hide desktop main canvas area
+        const desktopCanvasWrap = document.getElementById('canvasWrap');
+        if (desktopCanvasWrap) desktopCanvasWrap.style.display = 'none';
+        // Hide desktop top/bottom bars
+        const topBar = document.querySelector('.top-bar');
+        const bottomBar = document.querySelector('.bottom-bar');
+        if (topBar) topBar.style.display = 'none';
+        if (bottomBar) bottomBar.style.display = 'none';
+    }
+
+    /* Restore on resize to desktop */
+    function restoreDesktopLayout() {
+        if (isMob()) return;
+        const canvasWrap = document.getElementById('canvasWrap');
+        const wrapper = document.getElementById('hoodieWrapper');
+        const hoodieContainer = document.getElementById('hoodieContainer');
+        if (canvasWrap && wrapper && hoodieContainer && !hoodieContainer.contains(wrapper)) {
+            hoodieContainer.appendChild(wrapper);
+        }
+        const desktopCanvasWrap = document.getElementById('canvasWrap');
+        if (desktopCanvasWrap) desktopCanvasWrap.style.display = '';
+        const topBar = document.querySelector('.top-bar');
+        const bottomBar = document.querySelector('.bottom-bar');
+        if (topBar) topBar.style.display = '';
+        if (bottomBar) bottomBar.style.display = '';
+    }
+
+    window.addEventListener('resize', () => {
+        if (isMob()) initMobLayout(); else restoreDesktopLayout();
+    });
+
+    // Run on load
+    document.addEventListener('DOMContentLoaded', initMobLayout);
+    // Also run after model loads
+    const mv = document.getElementById('hoodieModel');
+    if (mv) mv.addEventListener('load', initMobLayout);
+    // Fallback immediate call
+    initMobLayout();
+
+    /* ── Mobile view buttons ── */
+    document.querySelectorAll('.mob-view-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (isPreviewMode) stopPreview();
+            if (isFreeControlMode) stopFreeControl();
+            deselectLogo();
+            document.querySelectorAll('.mob-view-btn').forEach(b => b.classList.remove('active'));
+            // Also sync desktop view buttons
+            document.querySelectorAll('.view-btn[data-view]').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentView = this.dataset.view;
+            modelViewer.cameraOrbit = cameraViews[currentView];
+            updateVisibleLogos();
+        });
+    });
+
+    /* ── Sync mob view buttons with desktop (for preview/free mode) ── */
+    const origUpdateVisible = updateVisibleLogos;
+    // patch: whenever currentView changes externally, sync mob buttons
+    setInterval(() => {
+        document.querySelectorAll('.mob-view-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.view === currentView);
+        });
+        // sync mob free/preview button states
+        const mfb = document.getElementById('mobFreeBtn');
+        if (mfb) {
+            mfb.classList.toggle('active', isFreeControlMode);
+            mfb.textContent = isFreeControlMode ? '🔒' : '⊙';
+        }
+        const mpb = document.getElementById('mobPreviewBtn');
+        if (mpb) {
+            mpb.classList.toggle('active', isPreviewMode);
+            mpb.textContent = isPreviewMode ? '⏹' : '▶';
+        }
+        // sync mob theme button
+        const mtb = document.getElementById('mobThemeBtn');
+        if (mtb) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            mtb.textContent = isDark ? '☀️' : '🌙';
+        }
+    }, 300);
+
+    /* ── Mobile free/preview buttons ── */
+    const mobFreeBtn = document.getElementById('mobFreeBtn');
+    if (mobFreeBtn) mobFreeBtn.addEventListener('click', () => isFreeControlMode ? stopFreeControl() : startFreeControl());
+    const mobPreviewBtn = document.getElementById('mobPreviewBtn');
+    if (mobPreviewBtn) mobPreviewBtn.addEventListener('click', () => isPreviewMode ? stopPreview() : startPreview());
+
+    /* ── Mobile tool buttons (wire to same handlers as desktop) ── */
+    const mobToolMap = {
+        mobRotateCCW: () => { if (!selectedLogoData) return; selectedLogoData.rotation=(selectedLogoData.rotation||0)-15; selectedLogo.style.transform=`rotate(${selectedLogoData.rotation}deg)`; updatePriceCard(); },
+        mobRotateCW:  () => { if (!selectedLogoData) return; selectedLogoData.rotation=(selectedLogoData.rotation||0)+15; selectedLogo.style.transform=`rotate(${selectedLogoData.rotation}deg)`; updatePriceCard(); },
+        mobZoomIn:    () => {
+            if (!selectedLogoData) return;
+            const nW = Math.min(100, selectedLogoData.widthPercent*1.1);
+            const nH = Math.min(100, selectedLogoData.heightPercent*1.1);
+            selectedLogoData.widthPercent = nW; selectedLogoData.heightPercent = nH;
+            selectedLogo.style.width = nW+'%'; selectedLogo.style.height = nH+'%';
+            const v = validateDesignDimensions(); if (!v.valid) showToast(v.message);
+            updatePriceCard();
+        },
+        mobZoomOut:   () => {
+            if (!selectedLogoData) return;
+            selectedLogoData.widthPercent=Math.max(2,selectedLogoData.widthPercent*0.9);
+            selectedLogoData.heightPercent=Math.max(2,selectedLogoData.heightPercent*0.9);
+            selectedLogo.style.width=selectedLogoData.widthPercent+'%';
+            selectedLogo.style.height=selectedLogoData.heightPercent+'%';
+            updatePriceCard();
+        },
+        mobDeleteLogo: () => {
+            if (!selectedLogoData||!selectedLogo) return;
+            logosByView[selectedLogoData.view]=logosByView[selectedLogoData.view].filter(l=>l.id!==selectedLogoData.id);
+            selectedLogo.remove(); deselectLogo(); updatePriceCard();
+        },
+    };
+    Object.entries(mobToolMap).forEach(([id, fn]) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('click', fn);
+    });
+
+    /* ── Mobile color dot selection ── */
+    window.mobSelectColor = function(dot) {
+        document.querySelectorAll('.mob-color-dot').forEach(d => d.classList.remove('active'));
+        dot.classList.add('active');
+        // Sync desktop color grid
+        const color = dot.dataset.color;
+        const desktopDot = document.querySelector(`#colorsGrid .section-item[data-color="${color}"]`);
+        if (desktopDot) selectColorFromGrid(desktopDot);
+        else {
+            currentColor = color;
+            applyColorToModel(color);
+            updateSizesForColor(dot.dataset.sizes);
+            updateMobSizes();
+        }
+    };
+
+    /* ── Mobile sizes ── */
+    function updateMobSizes() {
+        const list = document.getElementById('mobSizesList');
+        const desktopItems = document.querySelectorAll('#sizesGrid .size-item');
+        if (!list) return;
+        list.innerHTML = '';
+        desktopItems.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'mob-size-item' + (item.classList.contains('unavailable') ? ' unavailable' : '') + (item.classList.contains('active') ? ' active' : '');
+            el.textContent = item.textContent.trim();
+            if (!item.classList.contains('unavailable')) {
+                el.onclick = () => {
+                    document.querySelectorAll('.mob-size-item').forEach(s => s.classList.remove('active'));
+                    el.classList.add('active');
+                    selectSize(item, el.textContent.trim());
+                };
+            }
+            list.appendChild(el);
+        });
+    }
+
+    // Watch sizesGrid for changes
+    const sizesObs = new MutationObserver(updateMobSizes);
+    const sg = document.getElementById('sizesGrid');
+    if (sg) sizesObs.observe(sg, { childList: true });
+
+    /* ── Tab switching ── */
+    window.mobSwitchTab = function(tab) {
+        document.querySelectorAll('.mob-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+        document.querySelectorAll('.mob-panel').forEach(p => p.classList.remove('active'));
+        const panel = document.getElementById('mobPanel' + tab.charAt(0).toUpperCase() + tab.slice(1));
+        if (panel) panel.classList.add('active');
+        // If logos tab: load first section if none selected
+        if (tab === 'logos' && !document.querySelector('.mob-sec-chip.active')) {
+            const first = document.querySelector('.mob-sec-chip');
+            if (first) first.click();
+        }
+    };
+
+    /* ── Section chips in logos panel ── */
+    window.mobSelectSection = function(chip, sectionId) {
+        document.querySelectorAll('.mob-sec-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        const section = SECTIONS_DATA[sectionId];
+        if (!section) return;
+        const grid = document.getElementById('mobLogosGrid');
+        grid.innerHTML = '';
+        const logos = [...(section.logos||[]), ...uploadedLogos];
+        if (!logos.length) {
+            const p = document.createElement('p');
+            p.style.cssText='color:var(--muted);font-size:12px;text-align:center;width:100%;padding:16px 0;';
+            p.textContent = 'لا توجد لوجوهات'; grid.appendChild(p); return;
+        }
+        logos.forEach(src => {
+            const img = document.createElement('img');
+            img.src = src; img.className = 'mob-logo-item';
+            img.addEventListener('click', () => {
+                const r = hoodieWrapper.getBoundingClientRect();
+                addLogo(src, r.width/2, r.height/2);
+                showToast('تم إضافة اللوجو ✓');
+            });
+            // Long press to drag
+            let timer=null;
+            img.addEventListener('touchstart', e => {
+                const t=e.touches[0];
+                timer = setTimeout(() => {
+                    isDraggingFromSidebar=true; document.body.style.overflow='hidden';
+                    currentDragSource=img;
+                    dragPreview=document.createElement('img'); dragPreview.src=src;
+                    dragPreview.className='drag-preview';
+                    dragPreview.style.left=t.clientX-32+'px'; dragPreview.style.top=t.clientY-32+'px';
+                    document.body.appendChild(dragPreview);
+                }, 150);
+            }, {passive:true});
+            img.addEventListener('touchmove', e => {
+                if(!isDraggingFromSidebar&&timer){clearTimeout(timer);timer=null;}
+            }, {passive:true});
+            img.addEventListener('touchend', () => { if(timer){clearTimeout(timer);timer=null;} });
+            grid.appendChild(img);
+        });
+        // Also sync desktop logosPanel for drag compatibility
+        const desktopSection = document.querySelector(`#sectionsGrid .section-item[data-section-id="${sectionId}"]`);
+        if (desktopSection) selectSection(desktopSection, sectionId);
+    };
+
+    // Init first section
+    setTimeout(() => {
+        const firstChip = document.querySelector('.mob-sec-chip');
+        if (firstChip && isMob()) {
+            const sid = firstChip.dataset.sectionId;
+            mobSelectSection(firstChip, parseInt(sid));
+        }
+    }, 500);
+
+    /* ── Text panel sync ── */
+    window.syncMobText = function() {
+        const v = document.getElementById('mobTextInput').value;
+        const main = document.getElementById('addTextInput');
+        if (main) { main.value = v; handleTextLiveUpdate('text'); }
+    };
+    window.syncMobTextColor = function() {
+        const v = document.getElementById('mobTextColor').value;
+        const main = document.getElementById('addTextColor');
+        if (main) { main.value = v; handleTextLiveUpdate('color'); }
+        // Update label color preview
+        const ci = document.getElementById('mobTextColor');
+        if (ci) ci.style.outline = '2px solid '+v;
+    };
+    window.syncMobTashkeel = function() {
+        const v = document.getElementById('mobTashkeel').checked;
+        const main = document.getElementById('tashkeelToggle');
+        if (main) { main.checked = v; handleTextLiveUpdate('tashkeel'); }
+    };
+    // Keep mob font label in sync when desktop font picker changes
+    const origSelectFont = window.selectFont;
+    window.selectFont = function(el) {
+        origSelectFont(el);
+        const lbl = document.getElementById('mobFontLabel');
+        if (lbl) lbl.textContent = el.textContent.replace('✓','').trim().split(' ')[0];
+    };
+    // Keep mob text input in sync when desktop text input changes
+    const desktopTextInput = document.getElementById('addTextInput');
+    if (desktopTextInput) {
+        desktopTextInput.addEventListener('input', () => {
+            const mob = document.getElementById('mobTextInput');
+            if (mob && document.activeElement !== mob) mob.value = desktopTextInput.value;
+        });
+    }
+
+    /* ── Sync mob price strip with price card ── */
+    const origUpdatePriceCard = window.updatePriceCard;
+    window.updatePriceCard = function() {
+        origUpdatePriceCard();
+        syncMobPriceStrip();
+        updateMobSizes();
+    };
+
+    function syncMobPriceStrip() {
+        const base = document.getElementById('pcBasePrice')?.textContent || '';
+        const print = document.getElementById('pcPrintPrice')?.textContent || '—';
+        const total = document.getElementById('pcTotal')?.textContent || '';
+        const dims = document.getElementById('pcDimsText')?.textContent || '';
+        const note = document.querySelector('#priceCard .price-note')?.textContent || '';
+        const printRowVisible = document.getElementById('pcPrintRow')?.style.display !== 'none';
+
+        const mobBase = document.getElementById('mobBaseVal');
+        const mobPrint = document.getElementById('mobPrintVal');
+        const mobTotal = document.getElementById('mobTotalVal');
+        const mobMsg = document.getElementById('mobPriceMsg');
+        const mobDims = document.getElementById('mobDimsBadge');
+
+        if (mobBase) mobBase.textContent = base;
+        if (mobPrint) { mobPrint.textContent = printRowVisible ? print : '—'; mobPrint.style.opacity = printRowVisible ? '1' : '0.4'; }
+        if (mobTotal) mobTotal.textContent = total;
+        if (mobMsg) {
+            mobMsg.textContent = note.startsWith('⚠️') ? note : '';
+            mobMsg.style.display = note.startsWith('⚠️') ? 'block' : 'none';
+        }
+        if (mobDims) {
+            mobDims.textContent = dims ? '📐 '+dims : '';
+            mobDims.style.display = dims ? 'inline-flex' : 'none';
+        }
+    }
+
+    // Initial sync after model loads
+    document.getElementById('hoodieModel')?.addEventListener('load', () => {
+        setTimeout(() => { syncMobPriceStrip(); updateMobSizes(); }, 200);
+    });
+
+})();
+
 </script>
 </body>
 </html>
