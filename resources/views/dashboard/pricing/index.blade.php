@@ -468,35 +468,47 @@ function removeTier(btn) {
 }
 
 function saveTiers(btn) {
-    const rows   = document.querySelectorAll('#tiersContainer .tier-row');
-    const data   = new FormData();
+    const rows = document.querySelectorAll('#tiersContainer .tier-row');
+    const data = new FormData();
     data.append('_token', '{{ csrf_token() }}');
 
     let idx = 0;
     rows.forEach(row => {
-        const id    = row.querySelector('.tier-id')?.value ?? '';
-        const area  = row.querySelector('.tier-area')?.value ?? '';
-        const price = row.querySelector('.tier-price')?.value ?? '';
+        const idInput    = row.querySelector('input[name*="[id]"]');
+        const areaInput  = row.querySelector('input[name*="[max_area_cm2]"]');
+        const priceInput = row.querySelector('input[name*="[price]"]');
+
+        const id    = idInput?.value    ?? '';
+        const area  = areaInput?.value  ?? '';
+        const price = priceInput?.value ?? '';
+
         if (!area || !price) return;
+
         data.append(`pricing_tiers[${idx}][id]`,           id);
         data.append(`pricing_tiers[${idx}][max_area_cm2]`, area);
         data.append(`pricing_tiers[${idx}][price]`,        price);
         idx++;
     });
 
-    const orig = btn.innerHTML;
+    if (idx === 0) {
+        alert('لا توجد مستويات لحفظها');
+        return;
+    }
+
+    const orig    = btn.innerHTML;
     btn.disabled  = true;
     btn.innerHTML = '⏳ جاري الحفظ...';
 
     fetch('{{ route("pricing.tiers.update") }}', { method: 'POST', body: data })
         .then(res => {
-            if (res.redirected) {
+            // الـ controller بيعمل redirect — نتحقق من الـ status
+            if (res.ok || res.redirected) {
                 const box = document.getElementById('tiers-success');
                 box.textContent = '✓ تم حفظ المستويات بنجاح';
                 box.style.display = 'flex';
                 setTimeout(() => box.style.display = 'none', 3000);
             } else {
-                alert('حدث خطأ أثناء الحفظ');
+                return res.text().then(t => { alert('خطأ: ' + res.status); });
             }
         })
         .catch(() => alert('حدث خطأ في الاتصال'))

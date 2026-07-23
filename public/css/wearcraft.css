@@ -202,8 +202,28 @@
 
         /* Sections Grid */
         .sections-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 6px; margin-bottom: 4px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .section-item {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .section-item:hover {
+            transform: scale(1.1);
+        }
+
+        .section-item.active {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
         }
 
         .sizes-grid {
@@ -1061,75 +1081,89 @@
                 flex-shrink: 0;
                 align-items: center;
                 justify-content: center;
-                padding: 8px 4px;
+                padding: 8px 6px;
                 gap: 6px;
-                background: var(--cream);
+                background: var(--bg);
                 position: relative;
+                direction: ltr; /* نثبت الاتجاه عشان الترتيب يكون: tools يسار | model وسط | ألوان يمين */
             }
 
-            /* Left tools column */
+            /* Left tools column — يسار التيشيرت */
             .mob-left-tools {
                 display: flex; flex-direction: column;
                 gap: 5px; flex-shrink: 0;
+                order: 1;
             }
             .mob-tool-btn {
-                width: 34px; height: 34px;
+                width: 36px; height: 36px;
                 border-radius: 10px;
-                border: 1px solid var(--border-soft);
-                background: var(--cream-dark); color: var(--charcoal);
+                border: 1px solid var(--border-2);
+                background: var(--surface); color: var(--ink-2);
                 font-size: 15px; cursor: pointer;
                 display: flex; align-items: center; justify-content: center;
                 transition: all 0.15s;
             }
-            .mob-tool-btn:active { background: var(--gold); color: #fff; border-color: var(--gold); }
-            .mob-tool-btn.danger { color: #ff7b6b; }
+            .mob-tool-btn:active { background: var(--indigo); color: #fff; border-color: var(--indigo); }
+            .mob-tool-btn.danger { color: #fca5a5; }
             .mob-tool-btn.danger:active { background: var(--danger); color: #fff; }
 
-            /* Model slot — center */
+            /* Model slot — وسط */
             .mob-model-slot {
-                flex: 1; min-width: 0;
+                flex: 1; min-width: 0; order: 2;
                 aspect-ratio: 1;
-                max-width: calc(100vw - 90px - 52px); /* minus tools + colors */
-                max-height: calc(100vw - 90px - 52px);
-                border-radius: 16px; overflow: hidden;
-                border: 1px solid rgba(184,146,74,0.2);
-                background: #ede9e0;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                max-width: calc(100vw - 52px - 52px - 24px);
+                max-height: calc(100vw - 52px - 52px - 24px);
+                border-radius: 18px; overflow: hidden;
+                background: #e8e4de;
+                box-shadow: 0 4px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.1);
                 position: relative;
             }
-            /* The hoodieWrapper moved here inherits full size */
             .mob-model-slot .hoodie-wrapper,
-            .mob-model-slot model-viewer {
-                width: 100%; height: 100%;
-            }
+            .mob-model-slot model-viewer { width: 100%; height: 100%; }
             .mob-model-slot .logos-overlay { position: absolute; inset: 0; }
-            .mob-model-slot .color-overlay  { position: absolute; inset: 0; border-radius: 14px; }
+            .mob-model-slot .color-overlay  { position: absolute; inset: 0; border-radius: 16px; }
 
-            /* Colors column — right */
+            /* Colors column — يمين التيشيرت */
             .mob-colors-col {
                 display: flex; flex-direction: column;
-                gap: 5px; flex-shrink: 0;
-                max-height: calc(100vw - 90px - 52px);
-                overflow-y: auto; scrollbar-width: none;
+                gap: 5px; flex-shrink: 0; order: 3;
                 padding: 2px;
+                max-height: 200px;
+                overflow-y: auto;
             }
-            .mob-colors-col::-webkit-scrollbar { display: none; }
+            .mob-colors-col::-webkit-scrollbar { width: 4px; }
+            .mob-colors-col::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 2px; }
+            .mob-colors-col::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
             .mob-color-dot {
-                width: 26px; height: 26px; border-radius: 50%;
+                width: 28px; height: 28px; border-radius: 50%;
                 border: 2px solid transparent;
                 cursor: pointer; flex-shrink: 0;
                 display: flex; align-items: center; justify-content: center;
                 transition: all 0.2s;
             }
             .mob-color-dot span {
-                width: 20px; height: 20px; border-radius: 50%;
+                width: 22px; height: 22px; border-radius: 50%;
                 display: block;
-                box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+                box-shadow: 0 1px 5px rgba(0,0,0,0.4);
             }
             .mob-color-dot.active {
-                border-color: var(--gold);
-                box-shadow: 0 0 0 2px var(--gold-soft);
+                border-color: var(--indigo);
+                box-shadow: 0 0 0 2px var(--indigo-soft);
             }
+            /* زرار + لعرض باقي الألوان */
+            .mob-color-more {
+                width: 28px; height: 28px; border-radius: 50%;
+                background: var(--surface); border: 1px solid var(--border-2);
+                color: var(--muted); font-size: 14px; font-weight: 700;
+                cursor: pointer; flex-shrink: 0;
+                display: flex; align-items: center; justify-content: center;
+                transition: all 0.2s;
+            }
+            .mob-color-more:active { background: var(--indigo-soft); color: var(--indigo-xl); border-color: var(--indigo); }
+            /* الألوان المخفية */
+            .mob-color-dot.mob-color-hidden { display: none; }
+            .mob-colors-col.expanded .mob-color-dot.mob-color-hidden { display: flex; }
+            .mob-colors-col.expanded .mob-color-more { display: none; }
 
             /* ── Price strip ── */
             .mob-price-strip {
@@ -1165,11 +1199,25 @@
                 font-size: 13px; color: var(--muted); font-weight: 700; flex-shrink: 0;
             }
             .mob-price-msg {
-                position: absolute; bottom: -18px; left: 0; right: 0;
-                text-align: center; font-size: 10px; font-weight: 700;
-                color: #f59e0b; background: rgba(245,158,11,0.1);
-                padding: 2px 8px; display: none;
-                z-index: 5;
+                display: none;
+            }
+            /* Warning banner فوق شريط السعر */
+            .mob-warn-banner {
+                display: none;
+                flex-shrink: 0;
+                background: rgba(245,158,11,0.12);
+                border-top: 1px solid rgba(245,158,11,0.3);
+                border-bottom: 1px solid rgba(245,158,11,0.3);
+                color: #d97706;
+                font-size: 11px;
+                font-weight: 700;
+                font-family: var(--font-body);
+                padding: 6px 12px;
+                text-align: center;
+                line-height: 1.4;
+            }
+            .mob-warn-banner.visible {
+                display: block;
             }
 
             /* ── Sizes strip ── */

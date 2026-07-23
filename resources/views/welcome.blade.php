@@ -137,24 +137,6 @@
                 <button class="add-text-btn" onclick="handleAddText()">إضافة نص جديد</button>
             </div>
 
-            <div class="sb-section-label">اختر لون الهودي</div>
-            <div class="sections-grid" id="colorsGrid">
-                @foreach($colors as $color)
-                <div class="section-item {{ $color->hex_code === '#1a1a1a' ? 'active' : '' }}" 
-                     data-color="{{ $color->hex_code }}" 
-                     data-sizes="{{ json_encode($color->sizes ?? []) }}"
-                     onclick="selectColorFromGrid(this)"
-                     title="{{ $color->name }}">
-                    <div style="width: 100%; height: 100%; border-radius: 6px; background-color: {{ $color->hex_code }}; position: relative; z-index: 1;"></div>
-                </div>
-                @endforeach
-            </div>
-
-            <div class="sb-section-label" style="margin-top:8px;">المقاسات المتاحة</div>
-            <div class="sizes-grid" id="sizesGrid">
-                <!-- Sizes will be generated here by JS -->
-            </div>
-
             <!-- ══ PRICING CARD ══ -->
             <div class="price-card" id="priceCard">
                 <div class="price-card-header">
@@ -181,6 +163,24 @@
                     <span id="pcDimsText">—</span>
                 </div>
                 <div class="price-note">بدون طباعة بعد</div>
+            </div>
+
+            <div class="sb-section-label" style="margin-top:8px;">المقاسات المتاحة</div>
+            <div class="sizes-grid" id="sizesGrid">
+                <!-- Sizes will be generated here by JS -->
+            </div>
+
+            <div class="sb-section-label">اختر لون الهودي</div>
+            <div class="sections-grid" id="colorsGrid">
+                @foreach($colors as $color)
+                <div class="section-item {{ $color->hex_code === '#1a1a1a' ? 'active' : '' }}" 
+                     data-color="{{ $color->hex_code }}" 
+                     data-sizes="{{ json_encode($color->sizes ?? []) }}"
+                     onclick="selectColorFromGrid(this)"
+                     title="{{ $color->name }}">
+                    <div style="width: 100%; height: 100%; border-radius: 6px; background-color: {{ $color->hex_code }}; position: relative; z-index: 1;"></div>
+                </div>
+                @endforeach
             </div>
 
             <div class="sb-section-label" style="margin-top:8px;">إرشادات</div>
@@ -319,8 +319,8 @@
 
     <!-- ألوان يمين -->
     <div class="mob-colors-col" id="mobColorsCol">
-        @foreach($colors as $color)
-        <div class="mob-color-dot {{ $color->hex_code === '#1a1a1a' ? 'active' : '' }}"
+        @foreach($colors as $index => $color)
+        <div class="mob-color-dot {{ $color->hex_code === '#1a1a1a' ? 'active' : '' }} {{ $index >= 5 ? 'mob-color-hidden' : '' }}"
              data-color="{{ $color->hex_code }}"
              data-sizes="{{ json_encode($color->sizes ?? []) }}"
              onclick="mobSelectColor(this)"
@@ -328,8 +328,14 @@
             <span style="background:{{ $color->hex_code }}"></span>
         </div>
         @endforeach
+        @if($colors->count() > 5)
+        <button class="mob-color-more" id="mobColorMore" onclick="expandMobColors()" title="المزيد">+</button>
+        @endif
     </div>
 </div>
+
+<!-- MOB: Warning banner (فوق شريط السعر) -->
+<div class="mob-warn-banner" id="mobPriceMsg"></div>
 
 <!-- MOB: Price strip -->
 <div class="mob-price-strip" id="mobPriceStrip">
@@ -347,7 +353,6 @@
         <div class="mob-price-lbl">الإجمالي</div>
         <div class="mob-price-num" id="mobTotalVal">{{ $pricingSettings['tshirt_base_price'] }}</div>
     </div>
-    <div class="mob-price-msg" id="mobPriceMsg"></div>
 </div>
 
 <!-- MOB: Sizes + dims strip -->
@@ -538,7 +543,7 @@ const PRICING_SETTINGS = {
 let aiChatHistory = [];
 let aiChatOpen = false;
 
-document.getElementById('aiChatToggle').addEventListener('click', () => toggleAiChat());
+document.getElementById('aiChatToggle')?.addEventListener('click', () => toggleAiChat());
 
 function toggleAiChat(forceState) {
     aiChatOpen = typeof forceState === 'boolean' ? forceState : !aiChatOpen;
@@ -659,12 +664,13 @@ modelViewer.addEventListener('load', () => {
 });
 setTimeout(() => {
     const ls = document.getElementById('loadingScreen');
-    if (!ls.classList.contains('hidden')) {
+    if (ls && !ls.classList.contains('hidden')) {
         clearInterval(lsInterval);
-        lsBar.style.width = '100%'; lsPct.textContent = '100%';
+        if (lsBar) { lsBar.style.width = '100%'; }
+        if (lsPct) { lsPct.textContent = '100%'; }
         setTimeout(() => ls.classList.add('hidden'), 300);
     }
-}, 9000);
+}, 3000);
 
 /* ════ VIEWS ════ */
 viewButtons.forEach(btn => btn.addEventListener('click', function () {
@@ -785,19 +791,51 @@ document.getElementById('deleteLogo').addEventListener('click', () => {
     selectedLogo.remove(); deselectLogo(); updatePriceCard();
 });
 
-document.addEventListener('click', e => { if (!e.target.closest('.logo-on-hoodie') && !e.target.closest('.logo-toolbar') && !e.target.closest('.sidebar')) deselectAll(); });
-document.addEventListener('touchend', e => { if (isDraggingFromSidebar) return; if (!e.target.closest('.logo-on-hoodie') && !e.target.closest('.logo-toolbar') && !e.target.closest('.sidebar')) deselectAll(); }, {passive:true});
+document.addEventListener('click', e => {
+    if (
+        e.target.closest('.logo-on-hoodie') ||
+        e.target.closest('.logo-toolbar') ||
+        e.target.closest('.sidebar') ||
+        e.target.closest('.mob-panels') ||
+        e.target.closest('.mob-left-tools') ||
+        e.target.closest('.font-picker-dropdown') ||
+        e.target.closest('#fontPickerBackdrop')
+    ) return;
+    deselectAll();
+});
+document.addEventListener('touchend', e => {
+    if (isDraggingFromSidebar) return;
+    if (
+        e.target.closest('.logo-on-hoodie') ||
+        e.target.closest('.logo-toolbar') ||
+        e.target.closest('.sidebar') ||
+        e.target.closest('.mob-panels') ||
+        e.target.closest('.mob-left-tools') ||
+        e.target.closest('.font-picker-dropdown') ||
+        e.target.closest('#fontPickerBackdrop')
+    ) return;
+    deselectAll();
+}, {passive:true});
 
 function deselectAll() {
     if (selectedLogo) selectedLogo.classList.remove('selected');
     selectedLogo = selectedLogoData = null;
     logoToolbar.classList.remove('active');
-    // reset الخانة للـ default لما مفيش حاجة محددة
+    // reset desktop inputs
     document.getElementById('addTextInput').value = '';
     document.getElementById('addTextColor').value = '#ffffff';
     const tashkeel = document.getElementById('tashkeelToggle');
     if (tashkeel) tashkeel.checked = false;
     syncFontPickerUI("'Cairo', sans-serif");
+    // reset mobile inputs
+    const mobInput = document.getElementById('mobTextInput');
+    if (mobInput) mobInput.value = '';
+    const mobColor = document.getElementById('mobTextColor');
+    if (mobColor) mobColor.value = '#ffffff';
+    const mobTashkeel = document.getElementById('mobTashkeel');
+    if (mobTashkeel) mobTashkeel.checked = false;
+    const mobFontLbl = document.getElementById('mobFontLabel');
+    if (mobFontLbl) mobFontLbl.textContent = 'Cairo';
 }
 function deselectLogo() { deselectAll(); }
 
@@ -827,11 +865,38 @@ function selectLogo(logo, data) {
     selectedLogo=logo; selectedLogoData=data; logo.classList.add('selected'); logoToolbar.classList.add('active');
     
     if (data.type === 'text') {
+        // ── Desktop sidebar inputs ──
         document.getElementById('addTextInput').value = data.rawText || data.text || '';
         document.getElementById('addTextColor').value = data.color || '#ffffff';
         const toggle = document.getElementById('tashkeelToggle');
         if (toggle) toggle.checked = data.hasTashkeel || false;
         syncFontPickerUI(data.font || "'Cairo', sans-serif");
+
+        // ── Mobile: فتح تاب النص وملي الحقول ──
+        if (window.innerWidth <= 768) {
+            // افتح تاب النص
+            if (typeof mobSwitchTab === 'function') mobSwitchTab('text');
+
+            // ملي input النص
+            const mobInput = document.getElementById('mobTextInput');
+            if (mobInput) mobInput.value = data.rawText || data.text || '';
+
+            // ملي color picker
+            const mobColor = document.getElementById('mobTextColor');
+            if (mobColor) mobColor.value = data.color || '#ffffff';
+
+            // ملي تشكيل
+            const mobTashkeel = document.getElementById('mobTashkeel');
+            if (mobTashkeel) mobTashkeel.checked = data.hasTashkeel || false;
+
+            // ملي اسم الخط
+            const mobFontLbl = document.getElementById('mobFontLabel');
+            if (mobFontLbl) {
+                const fontVal = data.font || "'Cairo', sans-serif";
+                const opt = document.querySelector(`.font-picker-option[data-font="${fontVal}"]`);
+                if (opt) mobFontLbl.textContent = opt.textContent.replace('✓','').trim();
+            }
+        }
     }
 }
 
@@ -907,10 +972,62 @@ function handleAddText() {
 
 /* ════ CUSTOM FONT PICKER ════ */
 function toggleFontPicker() {
-    const btn = document.getElementById('fontPickerBtn');
-    const dd  = document.getElementById('fontPickerDropdown');
-    btn.classList.toggle('open');
-    dd.classList.toggle('open');
+    const dd = document.getElementById('fontPickerDropdown');
+    if (!dd) return;
+
+    const isOpen = dd.classList.contains('open');
+
+    if (window.innerWidth <= 768) {
+        if (isOpen) {
+            // إغلاق — رجّع العنصر لمكانه الأصلي
+            dd.classList.remove('open');
+            dd.removeAttribute('style');
+            document.getElementById('fontPickerWrap')?.appendChild(dd);
+            document.getElementById('fontPickerBackdrop')?.remove();
+        } else {
+            // انقل الـ dropdown لـ body عشان يخرج من أي overflow/transform
+            document.body.appendChild(dd);
+
+            // الألوان الفعلية حسب الـ theme
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const bgColor = isDark ? '#07101e' : '#141f35';
+
+            dd.style.cssText = [
+                'display:block !important',
+                'position:fixed !important',
+                'bottom:0 !important',
+                'left:0 !important',
+                'right:0 !important',
+                'top:auto !important',
+                'max-height:60vh',
+                'border-radius:16px 16px 0 0',
+                'z-index:9999',
+                `background:${bgColor}`,
+                'overflow-y:auto',
+                'box-shadow:0 -8px 40px rgba(0,0,0,0.6)',
+                'border:1px solid rgba(99,102,241,0.2)',
+                'border-bottom:none',
+            ].join(';');
+            dd.classList.add('open');
+
+            // backdrop
+            document.getElementById('fontPickerBackdrop')?.remove();
+            const backdrop = document.createElement('div');
+            backdrop.id = 'fontPickerBackdrop';
+            backdrop.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.5);';
+            backdrop.addEventListener('click', () => {
+                dd.classList.remove('open');
+                dd.removeAttribute('style');
+                document.getElementById('fontPickerWrap')?.appendChild(dd);
+                backdrop.remove();
+            }, { once: true });
+            document.body.appendChild(backdrop);
+        }
+    } else {
+        const btn = document.getElementById('fontPickerBtn');
+        btn?.classList.toggle('open');
+        dd.classList.toggle('open');
+    }
 }
 
 function selectFont(el) {
@@ -922,21 +1039,31 @@ function selectFont(el) {
     // update hidden input
     document.getElementById('addTextFont').value = fontVal;
 
-    // update button label with chosen font
+    // update desktop button label
     const label = document.getElementById('fontPickerLabel');
-    label.textContent = el.textContent.replace('✓', '').trim();
-    label.style.fontFamily = fontVal;
+    if (label) { label.textContent = el.textContent.replace('✓', '').trim(); label.style.fontFamily = fontVal; }
 
-    // close dropdown
-    document.getElementById('fontPickerBtn').classList.remove('open');
-    document.getElementById('fontPickerDropdown').classList.remove('open');
+    // close dropdown + backdrop — رجّع العنصر لمكانه
+    const dd2 = document.getElementById('fontPickerDropdown');
+    if (dd2) {
+        dd2.classList.remove('open');
+        dd2.removeAttribute('style');
+        document.getElementById('fontPickerWrap')?.appendChild(dd2);
+    }
+    document.getElementById('fontPickerBtn')?.classList.remove('open');
+    document.getElementById('fontPickerBackdrop')?.remove();
+
+    // update mobile font label
+    const mobLbl = document.getElementById('mobFontLabel');
+    if (mobLbl) mobLbl.textContent = el.textContent.replace('✓','').trim().split(' ')[0];
 
     // trigger live update
     handleTextLiveUpdate('font');
 }
 
-// Close font picker when clicking outside
+// Close font picker when clicking outside (desktop only)
 document.addEventListener('click', function(e) {
+    if (window.innerWidth <= 768) return; // على الموبايل backdrop بيعمل الشغل
     const wrap = document.getElementById('fontPickerWrap');
     if (wrap && !wrap.contains(e.target)) {
         document.getElementById('fontPickerBtn')?.classList.remove('open');
@@ -972,6 +1099,14 @@ function handleTextLiveUpdate(type) {
     // لو فيه نص محدد: عدّله مباشرة
     if (selectedLogoData && selectedLogoData.type === 'text') {
         if (type === 'text' || type === 'tashkeel') {
+            // لو الـ input اتمسح → احذف العنصر تلقائياً
+            if (inputVal.trim() === '') {
+                logosByView[selectedLogoData.view] = logosByView[selectedLogoData.view].filter(l => l.id !== selectedLogoData.id);
+                selectedLogo.remove();
+                deselectLogo();
+                updatePriceCard();
+                return;
+            }
             selectedLogoData.rawText = inputVal;
             selectedLogoData.text = processedText;
             selectedLogoData.hasTashkeel = isTashkeel;
@@ -1328,25 +1463,26 @@ function applyColorToModel(color) {
 }
 
 function updateContainerBackground(color) {
-    const container = document.getElementById('hoodieContainer');
-    if (!container) return;
-    
     // Calculate brightness
     const hex = color.replace('#', '');
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 2), 16);
     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    
-    // If color is light (brightness > 128), use dark background
-    if (brightness > 128) {
-        container.style.background = 'radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 100%)';
-        container.style.boxShadow = 'inset 0 0 40px rgba(0,0,0,0.3)';
-    } else {
-        // If color is dark, use light background
-        container.style.background = 'radial-gradient(circle at center, #f0f0f0 0%, #e0e0e0 100%)';
-        container.style.boxShadow = 'inset 0 0 40px rgba(0,0,0,0.1)';
-    }
+
+    const darkBg = 'radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 100%)';
+    const lightBg = 'radial-gradient(circle at center, #f0f0f0 0%, #e0e0e0 100%)';
+    const isLight = brightness > 128;
+    const bg = isLight ? darkBg : lightBg;
+    const shadow = isLight ? 'inset 0 0 40px rgba(0,0,0,0.3)' : 'inset 0 0 40px rgba(0,0,0,0.1)';
+
+    // Desktop container
+    const container = document.getElementById('hoodieContainer');
+    if (container) { container.style.background = bg; container.style.boxShadow = shadow; }
+
+    // Mobile model slot
+    const mobSlot = document.getElementById('mobModelSlot');
+    if (mobSlot) { mobSlot.style.background = bg; }
 }
 
 /* ════ UPLOAD PROGRESS ════ */
@@ -1612,69 +1748,64 @@ function blobToDataUrl(blob) {
 function calcDesignDimsCm() {
     const overlayEl = document.getElementById('logosOverlay');
     if (!overlayEl) return null;
-
     const overlayRect = overlayEl.getBoundingClientRect();
-    if (overlayRect.width < 1) return null;
+    if (overlayRect.width < 1 || overlayRect.height < 1) return null;
 
-    const scaleX = PRICING_SETTINGS.printAreaWidthCm  / overlayRect.width;
-    const scaleY = PRICING_SETTINGS.printAreaHeightCm / overlayRect.height;
+    const printW = PRICING_SETTINGS.printAreaWidthCm;
+    const printH = PRICING_SETTINGS.printAreaHeightCm;
 
-    let totalWidthCm = 0;
-    let totalHeightCm = 0;
-    let hasAnyLogo = false;
+    let totalAreaCm2 = 0;
+    let maxWidthCm   = 0;
+    let maxHeightCm  = 0;
+    let hasAnyLogo   = false;
 
-    // حساب الابعاد لكل وجه (الوش، الضهر، الخ) عشان مايحصلش تداخل
     for (const view in logosByView) {
         const viewLogos = logosByView[view];
         if (!viewLogos || !viewLogos.length) continue;
 
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        // حساب الـ bounding box الكامل لكل العناصر في هذا الوجه
+        let minX = Infinity, minY = Infinity;
+        let maxX = -Infinity, maxY = -Infinity;
         let viewHasLogos = false;
 
         viewLogos.forEach(d => {
             const domEl = overlayEl.querySelector(`.logo-on-hoodie[data-id="${d.id}"]`);
-            let xPx, yPx, wPx, hPx;
+            if (!domEl || !domEl.isConnected) return;
 
-            if (domEl) {
-                const r = domEl.getBoundingClientRect();
-                xPx = r.left - overlayRect.left;
-                yPx = r.top  - overlayRect.top;
-                wPx = r.width;
-                hPx = r.height;
-            } else {
-                const wp = (typeof d.widthPercent  === 'number') ? d.widthPercent  : 18;
-                const hp = (typeof d.heightPercent === 'number') ? d.heightPercent : 18;
-                xPx = (d.xPercent / 100) * overlayRect.width;
-                yPx = (d.yPercent / 100) * overlayRect.height;
-                wPx = (wp / 100) * overlayRect.width;
-                hPx = (hp / 100) * overlayRect.height;
-            }
+            // نقرأ الحجم الفعلي من الـ DOM بالبكسل
+            const r = domEl.getBoundingClientRect();
+            const xPx = r.left - overlayRect.left;
+            const yPx = r.top  - overlayRect.top;
+            const wPx = r.width;
+            const hPx = r.height;
 
-            if (wPx < 1 || hPx < 1) return;
+            // نتجاهل العناصر الصغيرة جداً (مخفية أو غير محسوبة)
+            if (wPx < 2 || hPx < 2) return;
 
             minX = Math.min(minX, xPx);
             minY = Math.min(minY, yPx);
             maxX = Math.max(maxX, xPx + wPx);
             maxY = Math.max(maxY, yPx + hPx);
             viewHasLogos = true;
-            hasAnyLogo = true;
+            hasAnyLogo   = true;
         });
 
         if (viewHasLogos && maxX > minX && maxY > minY) {
-            const vWidthCm = (maxX - minX) * scaleX;
-            const vHeightCm = (maxY - minY) * scaleY;
-            // العرض والارتفاع بناءً على أقصى قيمة في أي وجه
-            totalWidthCm = Math.max(totalWidthCm, vWidthCm);
-            totalHeightCm = Math.max(totalHeightCm, vHeightCm);
+            // تحويل البكسل لـ cm عبر نسبة الـ overlay
+            const vW = ((maxX - minX) / overlayRect.width)  * printW;
+            const vH = ((maxY - minY) / overlayRect.height) * printH;
+            totalAreaCm2 += vW * vH;
+            maxWidthCm    = Math.max(maxWidthCm,  vW);
+            maxHeightCm   = Math.max(maxHeightCm, vH);
         }
     }
 
     if (!hasAnyLogo) return null;
 
     return {
-        widthCm: Math.max(0.1, totalWidthCm),
-        heightCm: Math.max(0.1, totalHeightCm),
-        areaCm2: Math.max(0.1, totalWidthCm * totalHeightCm),
+        widthCm:  Math.max(0.1, maxWidthCm),
+        heightCm: Math.max(0.1, maxHeightCm),
+        areaCm2:  Math.max(0.1, totalAreaCm2),
     };
 }
 
@@ -1691,31 +1822,20 @@ function validateDesignDimensions() {
     const overlayRect = overlayEl.getBoundingClientRect();
     if (overlayRect.width < 1) return { valid: true, message: '' };
 
-    const scaleX = PRICING_SETTINGS.printAreaWidthCm  / overlayRect.width;
-    const scaleY = PRICING_SETTINGS.printAreaHeightCm / overlayRect.height;
-    
+    const printW = PRICING_SETTINGS.printAreaWidthCm;
+    const printH = PRICING_SETTINGS.printAreaHeightCm;
+
     let errors = [];
     let imgExceeded = false;
     let txtExceeded = false;
 
-    // التحقق على كل عنصر (صورة أو نص) بشكل منفصل
     allLogos.forEach(d => {
         const domEl = overlayEl.querySelector(`.logo-on-hoodie[data-id="${d.id}"]`);
-        let wPx, hPx;
+        if (!domEl || !domEl.isConnected) return;
 
-        if (domEl) {
-            const r = domEl.getBoundingClientRect();
-            wPx = r.width;
-            hPx = r.height;
-        } else {
-            const wp = (typeof d.widthPercent  === 'number') ? d.widthPercent  : 18;
-            const hp = (typeof d.heightPercent === 'number') ? d.heightPercent : 18;
-            wPx = (wp / 100) * overlayRect.width;
-            hPx = (hp / 100) * overlayRect.height;
-        }
-
-        const elW = wPx * scaleX;
-        const elH = hPx * scaleY;
+        const r   = domEl.getBoundingClientRect();
+        const elW = (r.width  / overlayRect.width)  * printW;
+        const elH = (r.height / overlayRect.height) * printH;
 
         if (d.type === 'image' && !imgExceeded) {
             if (elW > PRICING_SETTINGS.maxImageWidthCm || elH > PRICING_SETTINGS.maxImageHeightCm) {
@@ -1732,7 +1852,7 @@ function validateDesignDimensions() {
 
     return {
         valid: errors.length === 0,
-        message: errors.join(' و ')
+        message: errors.join(' | ')
     };
 }
 
@@ -1740,24 +1860,19 @@ function validateDesignDimensions() {
  * حساب سعر الطباعة باستخدام pricing tiers
  * النظام يعتمد على مستويات (tiers) بناءً على المساحة
  */
-function calcPrintPrice(widthCm, heightCm) {
-    const ps = PRICING_SETTINGS;
+function calcPrintPrice(areaCm2) {
+    const ps    = PRICING_SETTINGS;
     const tiers = ps.pricingTiers || [];
-    const area = widthCm * heightCm;
-    
-    console.log('Pricing Tiers:', tiers);
-    console.log('Area:', area);
-    
-    // البحث عن tier المناسب
-    let price = ps.minPrintPrice || 30; // سعر افتراضي
+    const area  = areaCm2;
+
+    let price = ps.minPrintPrice || 30;
     for (const tier of tiers) {
         if (area <= tier.max_area_cm2) {
             price = tier.price;
             break;
         }
     }
-    
-    console.log('Calculated Price:', price);
+
     return { rawCost: price, final: price };
 }
 
@@ -1787,50 +1902,36 @@ function updatePriceCard() {
 
     // التحقق من الحدود
     const validation = validateDesignDimensions();
-    if (!validation.valid) {
-        // عرض السعر مع رسالة تحذير
-        const { final: printPrice } = calcPrintPrice(dims.widthCm, dims.heightCm);
-        const total = base + printPrice;
-        
-        if (printRow)     printRow.style.display = 'flex';
-        if (printPriceEl) printPriceEl.textContent = printPrice + ' ج.م';
-        if (totalEl)      totalEl.textContent = total + ' ج.م';
-        
-        if (dimsEl)   dimsEl.style.display = 'flex';
-        if (dimsTxtEl) dimsTxtEl.textContent =
-            dims.widthCm.toFixed(1) + ' × ' + dims.heightCm.toFixed(1) + ' سم';
-        if (noteEl) {
-            noteEl.textContent = '⚠️ ' + validation.message;
-            noteEl.style.color = '#f59e0b';
-            noteEl.style.fontSize = '11px';
-        }
-        return;
-    }
-
-    const { final: printPrice } = calcPrintPrice(dims.widthCm, dims.heightCm);
+    const { final: printPrice } = calcPrintPrice(dims.areaCm2);
     const total = base + printPrice;
 
     if (printRow)     printRow.style.display = 'flex';
     if (printPriceEl) printPriceEl.textContent = printPrice + ' ج.م';
     if (totalEl)      totalEl.textContent = total + ' ج.م';
 
-    // إعادة تشغيل أنيميشن الإجمالي
     if (totalEl) {
         totalEl.style.animation = 'none';
-        void totalEl.offsetWidth; // reflow
+        void totalEl.offsetWidth;
         totalEl.style.animation = '';
     }
 
     if (dimsEl && dimsTxtEl) {
         dimsEl.style.display = 'flex';
         dimsTxtEl.textContent =
-            dims.widthCm.toFixed(1) + ' × ' + dims.heightCm.toFixed(1) + ' سم';
+            dims.widthCm.toFixed(1) + ' × ' + dims.heightCm.toFixed(1) + ' سم' +
+            (dims.areaCm2 ? ' (مساحة: ' + dims.areaCm2.toFixed(0) + ' سم²)' : '');
     }
 
     if (noteEl) {
-        noteEl.textContent = 'شامل سعر الطباعة DTF';
-        noteEl.style.color = '';
-        noteEl.style.fontSize = '';
+        if (!validation.valid) {
+            noteEl.textContent = '⚠️ ' + validation.message;
+            noteEl.style.color = '#f59e0b';
+            noteEl.style.fontSize = '11px';
+        } else {
+            noteEl.textContent = 'شامل سعر الطباعة DTF';
+            noteEl.style.color = '';
+            noteEl.style.fontSize = '';
+        }
     }
 }
 
@@ -2078,13 +2179,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isMob()) initMobLayout(); else restoreDesktopLayout();
     });
 
-    // Run on load
-    document.addEventListener('DOMContentLoaded', initMobLayout);
-    // Also run after model loads
+    // Run on DOMContentLoaded only — not immediately
+    // عشان نضمن الـ model viewer يبدأ في مكانه الأصلي قبل الـ init
+    document.addEventListener('DOMContentLoaded', () => {
+        // انتظر شوية بعد DOMContentLoaded عشان الـ model viewer يبدأ
+        setTimeout(initMobLayout, 100);
+    });
+    // Also run after model loads to ensure correct state
     const mv = document.getElementById('hoodieModel');
-    if (mv) mv.addEventListener('load', initMobLayout);
-    // Fallback immediate call
-    initMobLayout();
+    if (mv) mv.addEventListener('load', () => {
+        if (window.innerWidth <= 768) initMobLayout();
+    });
 
     /* ── Mobile view buttons ── */
     document.querySelectorAll('.mob-view-btn').forEach(btn => {
@@ -2286,9 +2391,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const v = document.getElementById('mobTextColor').value;
         const main = document.getElementById('addTextColor');
         if (main) { main.value = v; handleTextLiveUpdate('color'); }
-        // Update label color preview
-        const ci = document.getElementById('mobTextColor');
-        if (ci) ci.style.outline = '2px solid '+v;
     };
     window.syncMobTashkeel = function() {
         const v = document.getElementById('mobTashkeel').checked;
@@ -2300,7 +2402,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.selectFont = function(el) {
         origSelectFont(el);
         const lbl = document.getElementById('mobFontLabel');
-        if (lbl) lbl.textContent = el.textContent.replace('✓','').trim().split(' ')[0];
+        if (lbl) lbl.textContent = el.textContent.replace('✓','').trim();
     };
     // Keep mob text input in sync when desktop text input changes
     const desktopTextInput = document.getElementById('addTextInput');
@@ -2337,8 +2439,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mobPrint) { mobPrint.textContent = printRowVisible ? print : '—'; mobPrint.style.opacity = printRowVisible ? '1' : '0.4'; }
         if (mobTotal) mobTotal.textContent = total;
         if (mobMsg) {
-            mobMsg.textContent = note.startsWith('⚠️') ? note : '';
-            mobMsg.style.display = note.startsWith('⚠️') ? 'block' : 'none';
+            const hasWarn = note.startsWith('⚠️');
+            mobMsg.textContent = hasWarn ? note : '';
+            mobMsg.classList.toggle('visible', hasWarn);
         }
         if (mobDims) {
             mobDims.textContent = dims ? '📐 '+dims : '';
@@ -2350,6 +2453,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('hoodieModel')?.addEventListener('load', () => {
         setTimeout(() => { syncMobPriceStrip(); updateMobSizes(); }, 200);
     });
+
+    /* ── Expand mob colors on + press ── */
+    window.expandMobColors = function() {
+        document.getElementById('mobColorsCol')?.classList.add('expanded');
+    };
 
 })();
 
