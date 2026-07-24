@@ -33,9 +33,9 @@
 </head>
 <body>
 <script>
-    if (localStorage.getItem('theme') === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-    }
+    // Default to dark mode
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('theme', 'dark');
 </script>
 
 <!-- LOADING -->
@@ -61,7 +61,7 @@
                 <div class="sb-brand">Wear<em>C</em>raft</div>
             </div>
             <div class="sb-subtitle">3D Product Designer</div>
-            <div class="sb-product-badge">هودي كلاسيك</div>
+            <div class="sb-product-badge">تيشيرت بيزك</div>
         </div>
 
         <div class="sb-body">
@@ -170,7 +170,7 @@
                 <!-- Sizes will be generated here by JS -->
             </div>
 
-            <div class="sb-section-label">اختر لون الهودي</div>
+            <div class="sb-section-label">اختر لون التيشيرت</div>
             <div class="sections-grid" id="colorsGrid">
                 @foreach($colors as $color)
                 <div class="section-item {{ $color->hex_code === '#1a1a1a' ? 'active' : '' }}" 
@@ -187,7 +187,7 @@
             <div class="instructions">
                 <div class="instruction-row">
                     <div class="instruction-icon">🖱️</div>
-                    <span>اسحب اللوجو على الهودي</span>
+                    <span>اسحب اللوجو على التيشيرت</span>
                 </div>
                 <div class="instruction-row">
                     <div class="instruction-icon">📐</div>
@@ -233,12 +233,10 @@
                     <model-viewer
                         id="hoodieModel"
                         src="assets/3d_models/t-shirt-basic.glb"
-                        alt="3D Hoodie" 
+                        alt="3D Hoodie"
                         loading="eager" reveal="auto"
                         disable-zoom disable-pan touch-action="none"
                         camera-orbit="0deg 75deg 105%"
-                        min-camera-orbit="auto 75deg auto"
-                        max-camera-orbit="auto 75deg auto"
                         field-of-view="auto" camera-target="auto auto auto"
                         interaction-prompt="none">
                     </model-viewer>
@@ -671,7 +669,6 @@ setTimeout(() => {
         setTimeout(() => ls.classList.add('hidden'), 300);
     }
 }, 3000);
-
 /* ════ VIEWS ════ */
 viewButtons.forEach(btn => btn.addEventListener('click', function () {
     if (isPreviewMode) stopPreview();
@@ -716,7 +713,7 @@ function startPreview() {
     document.getElementById('previewBtn').textContent = 'إيقاف';
     document.getElementById('previewBtn').classList.add('gold-active');
     const views = ['front', 'right', 'back', 'left']; let i = 0;
-    previewInterval = setInterval(() => {
+        previewInterval = setInterval(() => {
         currentView = views[i];
         modelViewer.cameraOrbit = cameraViews[currentView];
         updateVisibleLogos();
@@ -743,7 +740,6 @@ modelViewer.addEventListener('camera-change', () => {
         deselectLogo(); // <--- تفريغ التحديد هنا كمان
     }
 });
-
 /* ════ SIDEBAR SWIPE ════ */
 (function() {
     const sidebar = document.getElementById('sidebar');
@@ -1359,7 +1355,6 @@ function addLogoToGrid(src, grid) {
         const r = hoodieWrapper.getBoundingClientRect();
         addLogo(src, r.width / 2, r.height / 2);
         document.getElementById('sidebar').classList.remove('open');
-        showToast('تم إضافة اللوجو في المنتصف ✓');
     });
     let timer=null, touchMoved=false;
     img.addEventListener('touchstart', e=>{ 
@@ -1377,7 +1372,6 @@ function addLogoToGrid(src, grid) {
             const r = hoodieWrapper.getBoundingClientRect();
             addLogo(src, r.width / 2, r.height / 2);
             document.getElementById('sidebar').classList.remove('open');
-            showToast('تم إضافة اللوجو في المنتصف ✓');
         }
     },{passive:true});
     grid.appendChild(img);
@@ -1397,8 +1391,6 @@ function selectColorFromGrid(colorItem) {
     
     // Update sizes
     updateSizesForColor(colorItem.dataset.sizes);
-    
-    showToast('تم تغيير لون الهودي ✓');
 }
 
 function updateSizesForColor(sizesJson) {
@@ -1536,7 +1528,7 @@ function addUploadedLogo(src) {
 
 function showToast(msg) {
     const t = document.createElement('div');
-    t.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--gold-light);border:1px solid rgba(184,146,74,0.3);padding:8px 20px;border-radius:100px;font-size:11px;font-weight:700;z-index:99999;pointer-events:none;transition:opacity 0.4s;letter-spacing:0.04em;box-shadow:0 8px 24px rgba(26,22,18,0.25);';
+    t.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--gold-light);border:1px solid rgba(184,146,74,0.3);padding:6px 16px;border-radius:100px;font-size:10px;font-weight:700;z-index:99999;pointer-events:none;transition:opacity 0.4s;letter-spacing:0.04em;box-shadow:0 8px 24px rgba(26,22,18,0.25);max-width:90vw;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
     t.textContent = msg;
     document.body.appendChild(t);
     setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(),400); }, 2200);
@@ -1574,7 +1566,7 @@ async function generateExportImages() {
     const ctx=finalCanvas.getContext('2d');
     ctx.fillStyle='#1a1612'; ctx.fillRect(0,0,totalW,totalH);
     ctx.fillStyle='#b8924a'; ctx.font='bold 28px "Cormorant Garamond",serif'; ctx.textAlign='center';
-    ctx.fillText('WearCraft — تصميم الهودي',totalW/2,PADDING+28);
+    ctx.fillText('WearCraft — تصميم التيشيرت',totalW/2,PADDING+28);
     const positions=[{col:0,row:0},{col:1,row:0},{col:0,row:1},{col:1,row:1}];
     await Promise.all(composited.map((item,i)=>new Promise(resolve=>{
         const{col,row}=positions[i],x=PADDING+col*(CELL+GAP),y=PADDING+50+row*(CELL+LABEL_H+GAP);
@@ -2346,7 +2338,6 @@ document.addEventListener('DOMContentLoaded', () => {
             img.addEventListener('click', () => {
                 const r = hoodieWrapper.getBoundingClientRect();
                 addLogo(src, r.width/2, r.height/2);
-                showToast('تم إضافة اللوجو ✓');
             });
             // Long press to drag
             let timer=null;

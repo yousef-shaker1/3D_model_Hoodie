@@ -162,10 +162,10 @@
                 </div>
             </div>
 
-            {{-- الهودي بالأربع وجوه --}}
+            {{-- التيشيرت بالأربع وجوه --}}
             <div class="col-lg-8">
                 <div class="card" style="padding: 20px;">
-                    <h5 class="card-title">👕 التصميم على الهودي</h5>
+                    <h5 class="card-title">👕 التصميم على التيشيرت</h5>
 
                     <div class="row g-3">
                         @php

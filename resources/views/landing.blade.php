@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="WearCraft — صمّم هوديك بنفسك بتقنية 3D. اختر اللون، أضف لوجوك، واطلب بسهولة.">
-    <title>WearCraft — صمّم هوديك بنفسك</title>
+    <meta name="description" content="WearCraft — صمّم تيشيرتك بنفسك بتقنية 3D. اختر اللون، أضف لوجوك، واطلب بسهولة.">
+    <title>WearCraft — صمّم تيشيرتك بنفسك</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
@@ -736,7 +736,7 @@
                 تقنية 3D تفاعلية
             </div>
             <h1 class="reveal reveal-delay-1">
-                صمّم هوديك<br>
+                صمّم تيشيرتك<br>
                 <span>بنفسك</span>
             </h1>
             <p class="reveal reveal-delay-2">
@@ -792,7 +792,7 @@
             <div class="feature-card reveal reveal-delay-2">
                 <div class="feature-icon-wrap">🧊</div>
                 <h3>معاينة 3D فورية</h3>
-                <p>شوف تصميمك على الهودي بتقنية ثلاثية الأبعاد من كل الاتجاهات قبل ما تطلب</p>
+                <p>شوف تصميمك على التيشيرت بتقنية ثلاثية الأبعاد من كل الاتجاهات قبل ما تطلب</p>
             </div>
             <div class="feature-card reveal reveal-delay-3">
                 <div class="feature-icon-wrap">✏️</div>
@@ -824,7 +824,7 @@
         <div class="how-text">
             <span class="section-tag reveal">الخطوات</span>
             <h2 class="section-title reveal reveal-delay-1">كيف يعمل؟</h2>
-            <p class="section-desc reveal reveal-delay-2">أربع خطوات بسيطة توصّلك لهوديك المميز</p>
+            <p class="section-desc reveal reveal-delay-2">أربع خطوات بسيطة توصّلك لتيشيرتك المميز</p>
             <a href="{{ route('designer') }}" class="btn-primary reveal reveal-delay-3" style="margin-top:8px; display:inline-flex;">
                 جرّب دلوقتي ←
             </a>
@@ -834,14 +834,14 @@
                 <div class="how-num">١</div>
                 <div class="how-step-text">
                     <h4>اختر اللون</h4>
-                    <p>اختر لون الهودي المفضل ليك من مجموعة ألوان متنوعة ومتجددة</p>
+                    <p>اختر لون التيشيرت المفضل ليك من مجموعة ألوان متنوعة ومتجددة</p>
                 </div>
             </div>
             <div class="how-step reveal reveal-delay-1">
                 <div class="how-num">٢</div>
                 <div class="how-step-text">
                     <h4>أضف اللوجو</h4>
-                    <p>ارفع لوجوك أو اختر من المكتبة، وضعّه على الهودي زي ما تحب</p>
+                    <p>ارفع لوجوك أو اختر من المكتبة، وضعّه على التيشيرت زي ما تحب</p>
                 </div>
             </div>
             <div class="how-step reveal reveal-delay-2">
@@ -873,7 +873,7 @@
 <section class="cta-section">
     <div class="cta-card reveal">
         <h2>جاهز تبدأ؟</h2>
-        <p>انضم لآلاف العملاء اللي صمّموا هوديهم الخاص مع WearCraft</p>
+        <p>انضم لآلاف العملاء اللي صمّموا تيشيرتهم الخاص مع WearCraft</p>
         <a href="{{ route('designer') }}" class="btn-primary" style="font-size:17px; padding:18px 48px;">
             ابدأ التصميم المجاني ←
         </a>
