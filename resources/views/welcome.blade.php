@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Cairo:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Aref+Ruqaa:wght@400;700&family=Reem+Kufi:wght@400;700&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Tajawal:wght@300;400;500;700&family=Changa:wght@300;400;600;700&family=Lalezar&family=Katibeh&family=Rakkas&family=Scheherazade+New:wght@400;700&family=Lateef:wght@400;700&family=El+Messiri:wght@400;700&family=Marhey:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/wearcraft.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/wearcraft.css') }}?v={{ time() }}">
     <style>
     #aiChatToggle{position:fixed;bottom:20px;left:20px;width:52px;height:52px;border-radius:50%;background:var(--ink,#1a1612);color:var(--gold-light,#e6c98a);border:1px solid rgba(184,146,74,0.35);font-size:22px;cursor:pointer;z-index:99998;box-shadow:0 8px 24px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;}
     #aiChatWindow{position:fixed;bottom:84px;left:20px;width:320px;max-width:90vw;max-height:60vh;background:var(--ink,#1a1612);border:1px solid rgba(184,146,74,0.25);border-radius:14px;display:none;flex-direction:column;overflow:hidden;z-index:99998;box-shadow:0 12px 32px rgba(0,0,0,0.35);}
@@ -66,23 +66,27 @@
 
         <div class="sb-body">
             <div class="sb-section-label">أقسام اللوجوهات</div>
-            <div class="sections-grid" id="sectionsGrid">
-                @foreach($sections as $section)
-                <div class="section-item" data-section-id="{{ $section->id }}" onclick="selectSection(this, {{ $section->id }})">
-                    @if($section->logo)
-                        <img src="{{ asset('storage/' . $section->logo) }}" alt="{{ $section->name }}" title="{{ $section->name }}">
-                    @else
-                        <div style="text-align:center;position:relative;z-index:1">
-                            <div class="section-item-icon">🏷️</div>
-                            <div class="section-item-label">{{ $section->name }}</div>
-                        </div>
-                    @endif
+            <div class="sections-nav-container">
+                <div class="sections-nav-scroll" id="sectionsNavScroll">
+                    <button type="button" class="section-nav-btn active" data-section-id="all" onclick="selectSection(this, 'all')">
+                        كل اللوجوهات
+                    </button>
+                    @foreach($sections as $section)
+                    <button type="button" class="section-nav-btn" data-section-id="{{ $section->id }}" onclick="selectSection(this, {{ $section->id }})">
+                        @if($section->logo)
+                            <img src="{{ asset('storage/' . $section->logo) }}" alt="{{ $section->name }}">
+                        @endif
+                        <span>{{ $section->name }}</span>
+                    </button>
+                    @endforeach
                 </div>
-                @endforeach
             </div>
 
-            <div class="logos-panel" id="logosPanel">
-                <div class="logos-panel-title" id="selectedSectionName"></div>
+            <div class="logos-panel open" id="logosPanel">
+                <div class="logos-panel-header">
+                    <div class="logos-panel-title" id="selectedSectionName">كل اللوجوهات</div>
+                    <!-- <button type="button" class="randomize-btn" onclick="refreshRandomLogos()" title="عشوائي جديد">🎲 عشوائي</button> -->
+                </div>
                 <div class="logo-grid" id="logoGrid"></div>
             </div>
 
@@ -357,7 +361,7 @@
 <div class="mob-sizes-strip" id="mobSizesStrip">
     <span class="mob-sizes-lbl">المقاس:</span>
     <div class="mob-sizes-list" id="mobSizesList"></div>
-    <div class="mob-dims-badge" id="mobDimsBadge" style="display:none"></div>
+    <div class="mob-dims-badge" id="mobDimsBadge" style="display:none;"></div>
 </div>
 
 <!-- MOB: Bottom Tab bar -->
@@ -382,15 +386,18 @@
     <!-- Logos panel -->
     <div class="mob-panel active" id="mobPanelLogos">
         <div class="mob-sections-bar" id="mobSectionsBar">
+            <button type="button" class="mob-sec-chip active" data-section-id="all" onclick="mobSelectSection(this, 'all')">
+                <span>كل اللوجوهات</span>
+            </button>
             @foreach($sections as $section)
-            <div class="mob-sec-chip {{ $loop->first ? 'active' : '' }}"
+            <button type="button" class="mob-sec-chip"
                  data-section-id="{{ $section->id }}"
                  onclick="mobSelectSection(this, {{ $section->id }})">
                 @if($section->logo)
                     <img src="{{ asset('storage/' . $section->logo) }}" alt="{{ $section->name }}">
                 @endif
                 <span>{{ $section->name }}</span>
-            </div>
+            </button>
             @endforeach
         </div>
         <div class="mob-logos-grid" id="mobLogosGrid"></div>
@@ -660,6 +667,10 @@ modelViewer.addEventListener('load', () => {
     
     updateContainerBackground(currentColor);
 });
+setTimeout(() => {
+    const allBtn = document.querySelector('.section-nav-btn[data-section-id="all"]');
+    if (allBtn) selectSection(allBtn, 'all');
+}, 100);
 setTimeout(() => {
     const ls = document.getElementById('loadingScreen');
     if (ls && !ls.classList.contains('hidden')) {
@@ -1187,7 +1198,7 @@ function createLogoElement(data) {
     }
 
     const del=document.createElement('button'); del.className='delete-btn'; del.innerHTML='✕';
-    del.onclick=e=>{ e.stopPropagation(); logosByView[data.view]=logosByView[data.view].filter(l=>l.id!==data.id); logo.remove(); deselectLogo(); updatePriceCard(); };
+    del.onclick=e=>{ e.stopPropagation(); logosByView[data.view]=logosByView[data.view].filter(l=>l.id!==data.id); logo.remove(); deselectLogo(); updatePriceCard(); updateLogosCheckmarks(); };
     const handle=document.createElement('div'); handle.className='resize-handle';
     logo.append(del,handle);
     
@@ -1319,62 +1330,199 @@ function makeResizableTextX(logo,data,handle) {
     handle.addEventListener('touchstart',start,{passive:false,capture:true}); document.addEventListener('touchmove',move,{passive:false}); document.addEventListener('touchend',stop);
 }
 
-/* ════ SECTIONS ════ */
+/* ════ SECTIONS & RANDOM LOGOS ════ */
+function getRandomLogosFromAll(count = 20) {
+    let allLogos = [];
+    Object.values(SECTIONS_DATA).forEach(sec => {
+        if (sec.logos && sec.logos.length) {
+            allLogos.push(...sec.logos);
+        }
+    });
+    if (uploadedLogos && uploadedLogos.length) {
+        allLogos.push(...uploadedLogos);
+    }
+    // إزالة التكرار
+    allLogos = Array.from(new Set(allLogos));
+    
+    // خلط عشوائي (Fisher-Yates Shuffle)
+    for (let i = allLogos.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allLogos[i], allLogos[j]] = [allLogos[j], allLogos[i]];
+    }
+    
+    return allLogos.slice(0, count);
+}
+
+function isLogoAddedToShirt(src) {
+    return Object.values(logosByView).some(logosList => 
+        logosList.some(l => l.type === 'image' && l.src === src)
+    );
+}
+
 function selectSection(el, sectionId) {
     const sid = String(sectionId);
-    if (currentSectionId === sid) {
-        el.classList.remove('active');
-        currentSectionId = null;
-        document.getElementById('logosPanel').classList.remove('open');
-        return;
+    document.querySelectorAll('.section-nav-btn').forEach(s => s.classList.remove('active'));
+    if (el) el.classList.add('active');
+    else {
+        const btn = document.querySelector(`.section-nav-btn[data-section-id="${sectionId}"]`);
+        if (btn) btn.classList.add('active');
     }
-    document.querySelectorAll('.section-item').forEach(s=>s.classList.remove('active'));
-    el.classList.add('active');
+    
     currentSectionId = sid;
-    const section = SECTIONS_DATA[sectionId];
-    if (!section) return;
-    document.getElementById('selectedSectionName').textContent = section.name;
     const grid = document.getElementById('logoGrid');
     grid.innerHTML = '';
-    const allLogos = [...(section.logos||[]), ...uploadedLogos];
-    if (!allLogos.length) {
+    
+    let logosToShow = [];
+    if (sid === 'all') {
+        document.getElementById('selectedSectionName').textContent = 'كل اللوجوهات';
+        logosToShow = getRandomLogosFromAll(20);
+    } else {
+        const section = SECTIONS_DATA[sectionId];
+        if (section) {
+            document.getElementById('selectedSectionName').textContent = section.name;
+            logosToShow = [...(section.logos || [])];
+        }
+    }
+
+    if (!logosToShow.length) {
         const p = document.createElement('p'); p.className='no-logos-msg'; p.textContent='لا توجد لوجوهات'; grid.appendChild(p);
     } else {
-        allLogos.forEach(src=>addLogoToGrid(src,grid));
+        logosToShow.forEach(src => addLogoToGrid(src, grid));
     }
     document.getElementById('logosPanel').classList.add('open');
     grid.classList.add('slide-in');
+
+    // مزامنة زر الموبايل
+    const mobChip = document.querySelector(`.mob-sec-chip[data-section-id="${sid}"]`);
+    if (mobChip && !mobChip.classList.contains('active')) {
+        document.querySelectorAll('.mob-sec-chip').forEach(c => c.classList.remove('active'));
+        mobChip.classList.add('active');
+    }
+}
+
+function refreshRandomLogos() {
+    if (currentSectionId === 'all') {
+        const allBtn = document.querySelector('.section-nav-btn[data-section-id="all"]');
+        selectSection(allBtn, 'all');
+        const mobAllBtn = document.querySelector('.mob-sec-chip[data-section-id="all"]');
+        if (mobAllBtn) {
+            document.querySelectorAll('.mob-sec-chip').forEach(c => c.classList.remove('active'));
+            mobAllBtn.classList.add('active');
+            renderMobLogos(getRandomLogosFromAll(20));
+        }
+    }
+}
+
+function toggleLogoSearch() {
+    const box = document.getElementById('logoSearchBox');
+    if (!box) return;
+    const isHidden = box.style.display === 'none';
+    box.style.display = isHidden ? 'block' : 'none';
+    if (isHidden) {
+        document.getElementById('logoSearchInput').focus();
+    } else {
+        document.getElementById('logoSearchInput').value = '';
+        if (currentSectionId) selectSection(null, currentSectionId);
+    }
+}
+
+function filterLogos(query) {
+    query = query.trim().toLowerCase();
+    const grid = document.getElementById('logoGrid');
+    grid.innerHTML = '';
+    let allLogos = [];
+    Object.values(SECTIONS_DATA).forEach(sec => {
+        if (sec.logos) allLogos.push(...sec.logos);
+    });
+    if (!query) {
+        selectSection(null, currentSectionId || 'all');
+        return;
+    }
+    const filtered = allLogos.filter(src => src.toLowerCase().includes(query));
+    if (!filtered.length) {
+        const p = document.createElement('p'); p.className='no-logos-msg'; p.textContent='لم يتم العثور على نتائج'; grid.appendChild(p);
+    } else {
+        filtered.forEach(src => addLogoToGrid(src, grid));
+    }
+}
+
+function updateLogosCheckmarks() {
+    document.querySelectorAll('.logo-item-wrapper').forEach(wrap => {
+        const src = wrap.dataset.src;
+        const isAdded = isLogoAddedToShirt(src);
+        wrap.classList.toggle('added', isAdded);
+    });
 }
 
 function addLogoToGrid(src, grid) {
+    const wrap = document.createElement('div');
+    wrap.className = 'logo-item-wrapper' + (isLogoAddedToShirt(src) ? ' added' : '');
+    wrap.dataset.src = src;
+
     const img = document.createElement('img');
-    img.src=src; img.className='logo-item'; img.alt='Logo'; img.draggable=true;
-    img.addEventListener('dragstart', e=>{ currentDragSource=img; e.dataTransfer.effectAllowed='copy'; e.dataTransfer.setData('text/plain',src); document.getElementById('sidebar').classList.remove('open'); });
-    img.addEventListener('dragend', ()=>currentDragSource=null);
-    img.addEventListener('click', () => {
+    img.src = src; img.className = 'logo-item'; img.alt = 'Logo'; img.draggable = true;
+
+    const checkBadge = document.createElement('div');
+    checkBadge.className = 'logo-check-badge';
+    checkBadge.innerHTML = '✓';
+
+    const addBtn = document.createElement('div');
+    addBtn.className = 'logo-add-icon';
+    addBtn.innerHTML = '+';
+
+    wrap.appendChild(img);
+    wrap.appendChild(checkBadge);
+    wrap.appendChild(addBtn);
+
+    img.addEventListener('dragstart', e => { currentDragSource = img; e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('text/plain', src); document.getElementById('sidebar').classList.remove('open'); });
+    img.addEventListener('dragend', () => currentDragSource = null);
+    
+    wrap.addEventListener('click', () => {
         const r = hoodieWrapper.getBoundingClientRect();
         addLogo(src, r.width / 2, r.height / 2);
-        document.getElementById('sidebar').classList.remove('open');
+        updateLogosCheckmarks();
+        if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
     });
-    let timer=null, touchMoved=false;
-    img.addEventListener('touchstart', e=>{ 
+
+    let timer = null, touchMoved = false;
+    wrap.addEventListener('touchstart', e => { 
         touchMoved = false;
-        const t=e.touches[0],sx=t.clientX,sy=t.clientY; 
-        timer=setTimeout(()=>{ isDraggingFromSidebar=true; document.body.style.overflow='hidden'; currentDragSource=img; dragPreview=document.createElement('img'); dragPreview.src=src; dragPreview.className='drag-preview'; dragPreview.style.left=sx-32+'px'; dragPreview.style.top=sy-32+'px'; document.body.appendChild(dragPreview); document.getElementById('sidebar').classList.remove('open'); },150); 
-    },{passive:true});
-    img.addEventListener('touchmove', e=>{ 
+        const t = e.touches[0], sx = t.clientX, sy = t.clientY; 
+        timer = setTimeout(() => { 
+            isDraggingFromSidebar = true; document.body.style.overflow = 'hidden'; 
+            currentDragSource = img; 
+            dragPreview = document.createElement('img'); dragPreview.src = src; 
+            dragPreview.className = 'drag-preview'; dragPreview.style.left = sx - 32 + 'px'; dragPreview.style.top = sy - 32 + 'px'; 
+            document.body.appendChild(dragPreview); 
+            document.getElementById('sidebar').classList.remove('open'); 
+        }, 150); 
+    }, {passive: true});
+
+    wrap.addEventListener('touchmove', e => { 
         touchMoved = true;
-        if(!isDraggingFromSidebar&&timer){ clearTimeout(timer);timer=null; const t=e.touches[0]; isDraggingFromSidebar=true; document.body.style.overflow='hidden'; currentDragSource=img; dragPreview=document.createElement('img'); dragPreview.src=src; dragPreview.className='drag-preview'; dragPreview.style.left=t.clientX-32+'px'; dragPreview.style.top=t.clientY-32+'px'; document.body.appendChild(dragPreview); document.getElementById('sidebar').classList.remove('open'); } 
-    },{passive:true});
-    img.addEventListener('touchend', e=>{ 
-        if(timer){clearTimeout(timer);timer=null;} 
-        if(!isDraggingFromSidebar && !touchMoved) {
+        if (!isDraggingFromSidebar && timer) { 
+            clearTimeout(timer); timer = null; 
+            const t = e.touches[0]; 
+            isDraggingFromSidebar = true; document.body.style.overflow = 'hidden'; 
+            currentDragSource = img; 
+            dragPreview = document.createElement('img'); dragPreview.src = src; 
+            dragPreview.className = 'drag-preview'; dragPreview.style.left = t.clientX - 32 + 'px'; dragPreview.style.top = t.clientY - 32 + 'px'; 
+            document.body.appendChild(dragPreview); 
+            document.getElementById('sidebar').classList.remove('open'); 
+        } 
+    }, {passive: true});
+
+    wrap.addEventListener('touchend', e => { 
+        if (timer) { clearTimeout(timer); timer = null; } 
+        if (!isDraggingFromSidebar && !touchMoved) {
             const r = hoodieWrapper.getBoundingClientRect();
             addLogo(src, r.width / 2, r.height / 2);
-            document.getElementById('sidebar').classList.remove('open');
+            updateLogosCheckmarks();
+            if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
         }
-    },{passive:true});
-    grid.appendChild(img);
+    }, {passive: true});
+
+    grid.appendChild(wrap);
 }
 
 /* ════ COLOR PICKER ════ */
@@ -1818,8 +1966,7 @@ function validateDesignDimensions() {
     const printH = PRICING_SETTINGS.printAreaHeightCm;
 
     let errors = [];
-    let imgExceeded = false;
-    let txtExceeded = false;
+    let exceeded = false;
 
     allLogos.forEach(d => {
         const domEl = overlayEl.querySelector(`.logo-on-hoodie[data-id="${d.id}"]`);
@@ -1829,15 +1976,19 @@ function validateDesignDimensions() {
         const elW = (r.width  / overlayRect.width)  * printW;
         const elH = (r.height / overlayRect.height) * printH;
 
-        if (d.type === 'image' && !imgExceeded) {
-            if (elW > PRICING_SETTINGS.maxImageWidthCm || elH > PRICING_SETTINGS.maxImageHeightCm) {
-                errors.push(`إحدى الصور تتجاوز الحدود المسموحة (${PRICING_SETTINGS.maxImageWidthCm}×${PRICING_SETTINGS.maxImageHeightCm} سم)`);
-                imgExceeded = true;
-            }
-        } else if (d.type === 'text' && !txtExceeded) {
-            if (elW > PRICING_SETTINGS.maxTextWidthCm || elH > PRICING_SETTINGS.maxTextHeightCm) {
-                errors.push(`إحدى الكتابات تتجاوز الحدود المسموحة (${PRICING_SETTINGS.maxTextWidthCm}×${PRICING_SETTINGS.maxTextHeightCm} سم)`);
-                txtExceeded = true;
+        if (!exceeded) {
+            if (d.type === 'image') {
+                if (elW > PRICING_SETTINGS.maxImageWidthCm || elH > PRICING_SETTINGS.maxImageHeightCm) {
+                    errors.push(`إحدى العناصر تجاوز الحد الأقصى`);
+                    exceeded = true;
+                }
+            } else if (d.type === 'text') {
+                if (elW > PRICING_SETTINGS.maxTextWidthCm || elH > PRICING_SETTINGS.maxTextHeightCm) {
+                    // errors.push(`إحدى العناصر تجاوز الحد الأقصى`);
+                                    errors.push(`إحدى الكتابات تتجاوز الحدود المسموحة (${PRICING_SETTINGS.maxTextWidthCm}×${PRICING_SETTINGS.maxTextHeightCm} سم)`);
+                
+                    exceeded = true;
+                }
             }
         }
     });
@@ -2263,6 +2414,113 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el) el.addEventListener('click', fn);
     });
 
+    /* ── Mobile Search & Sections ── */
+    window.toggleMobLogoSearch = function() {
+        const box = document.getElementById('mobLogoSearchBox');
+        if (!box) return;
+        const isHidden = box.style.display === 'none';
+        box.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) {
+            document.getElementById('mobLogoSearchInput').focus();
+        } else {
+            document.getElementById('mobLogoSearchInput').value = '';
+            const activeChip = document.querySelector('.mob-sec-chip.active');
+            if (activeChip) activeChip.click();
+        }
+    };
+
+    window.filterMobLogos = function(query) {
+        query = query.trim().toLowerCase();
+        let allLogos = [];
+        Object.values(SECTIONS_DATA).forEach(sec => {
+            if (sec.logos) allLogos.push(...sec.logos);
+        });
+        if (!query) {
+            const activeChip = document.querySelector('.mob-sec-chip.active');
+            if (activeChip) activeChip.click();
+            return;
+        }
+        const filtered = allLogos.filter(src => src.toLowerCase().includes(query));
+        renderMobLogos(filtered);
+    };
+
+    function renderMobLogos(logos) {
+        const grid = document.getElementById('mobLogosGrid');
+        grid.innerHTML = '';
+        if (!logos || !logos.length) {
+            const p = document.createElement('p');
+            p.style.cssText='color:var(--muted);font-size:12px;text-align:center;width:100%;padding:16px 0;grid-column:1/-1;';
+            p.textContent = 'لا توجد لوجوهات'; grid.appendChild(p); return;
+        }
+        logos.forEach(src => {
+            const wrap = document.createElement('div');
+            wrap.className = 'logo-item-wrapper' + (isLogoAddedToShirt(src) ? ' added' : '');
+            wrap.dataset.src = src;
+
+            const img = document.createElement('img');
+            img.src = src; img.className = 'mob-logo-item';
+
+            const checkBadge = document.createElement('div');
+            checkBadge.className = 'logo-check-badge';
+            checkBadge.innerHTML = '✓';
+
+            const addBtn = document.createElement('div');
+            addBtn.className = 'logo-add-icon';
+            addBtn.innerHTML = '+';
+
+            wrap.appendChild(img);
+            wrap.appendChild(checkBadge);
+            wrap.appendChild(addBtn);
+
+            wrap.addEventListener('click', () => {
+                const r = hoodieWrapper.getBoundingClientRect();
+                addLogo(src, r.width/2, r.height/2);
+                updateLogosCheckmarks();
+            });
+
+            // Long press to drag
+            let timer = null;
+            wrap.addEventListener('touchstart', e => {
+                const t = e.touches[0];
+                timer = setTimeout(() => {
+                    isDraggingFromSidebar = true; document.body.style.overflow = 'hidden';
+                    currentDragSource = img;
+                    dragPreview = document.createElement('img'); dragPreview.src = src;
+                    dragPreview.className = 'drag-preview';
+                    dragPreview.style.left = t.clientX - 32 + 'px'; dragPreview.style.top = t.clientY - 32 + 'px';
+                    document.body.appendChild(dragPreview);
+                }, 150);
+            }, {passive: true});
+            wrap.addEventListener('touchmove', e => {
+                if (!isDraggingFromSidebar && timer) { clearTimeout(timer); timer = null; }
+            }, {passive: true});
+            wrap.addEventListener('touchend', () => { if (timer) { clearTimeout(timer); timer = null; } });
+
+            grid.appendChild(wrap);
+        });
+    }
+
+    /* ── Section chips in logos panel ── */
+    window.mobSelectSection = function(chip, sectionId) {
+        document.querySelectorAll('.mob-sec-chip').forEach(c => c.classList.remove('active'));
+        if (chip) chip.classList.add('active');
+        
+        const sid = String(sectionId);
+        let logos = [];
+        if (sid === 'all') {
+            logos = getRandomLogosFromAll(20);
+        } else {
+            const section = SECTIONS_DATA[sectionId];
+            if (section) logos = [...(section.logos || [])];
+        }
+        
+        renderMobLogos(logos);
+
+        // Also sync desktop section nav
+        const desktopBtn = document.querySelector(`.section-nav-btn[data-section-id="${sid}"]`);
+        if (desktopBtn && !desktopBtn.classList.contains('active')) {
+        }
+    };
     /* ── Mobile color dot selection ── */
     window.mobSelectColor = function(dot) {
         document.querySelectorAll('.mob-color-dot').forEach(d => d.classList.remove('active'));
@@ -2305,72 +2563,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const sg = document.getElementById('sizesGrid');
     if (sg) sizesObs.observe(sg, { childList: true });
 
-    /* ── Tab switching ── */
-    window.mobSwitchTab = function(tab) {
-        document.querySelectorAll('.mob-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-        document.querySelectorAll('.mob-panel').forEach(p => p.classList.remove('active'));
-        const panel = document.getElementById('mobPanel' + tab.charAt(0).toUpperCase() + tab.slice(1));
-        if (panel) panel.classList.add('active');
-        // If logos tab: load first section if none selected
-        if (tab === 'logos' && !document.querySelector('.mob-sec-chip.active')) {
-            const first = document.querySelector('.mob-sec-chip');
-            if (first) first.click();
-        }
-    };
-
-    /* ── Section chips in logos panel ── */
-    window.mobSelectSection = function(chip, sectionId) {
-        document.querySelectorAll('.mob-sec-chip').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        const section = SECTIONS_DATA[sectionId];
-        if (!section) return;
-        const grid = document.getElementById('mobLogosGrid');
-        grid.innerHTML = '';
-        const logos = [...(section.logos||[]), ...uploadedLogos];
-        if (!logos.length) {
-            const p = document.createElement('p');
-            p.style.cssText='color:var(--muted);font-size:12px;text-align:center;width:100%;padding:16px 0;';
-            p.textContent = 'لا توجد لوجوهات'; grid.appendChild(p); return;
-        }
-        logos.forEach(src => {
-            const img = document.createElement('img');
-            img.src = src; img.className = 'mob-logo-item';
-            img.addEventListener('click', () => {
-                const r = hoodieWrapper.getBoundingClientRect();
-                addLogo(src, r.width/2, r.height/2);
-            });
-            // Long press to drag
-            let timer=null;
-            img.addEventListener('touchstart', e => {
-                const t=e.touches[0];
-                timer = setTimeout(() => {
-                    isDraggingFromSidebar=true; document.body.style.overflow='hidden';
-                    currentDragSource=img;
-                    dragPreview=document.createElement('img'); dragPreview.src=src;
-                    dragPreview.className='drag-preview';
-                    dragPreview.style.left=t.clientX-32+'px'; dragPreview.style.top=t.clientY-32+'px';
-                    document.body.appendChild(dragPreview);
-                }, 150);
-            }, {passive:true});
-            img.addEventListener('touchmove', e => {
-                if(!isDraggingFromSidebar&&timer){clearTimeout(timer);timer=null;}
-            }, {passive:true});
-            img.addEventListener('touchend', () => { if(timer){clearTimeout(timer);timer=null;} });
-            grid.appendChild(img);
-        });
-        // Also sync desktop logosPanel for drag compatibility
-        const desktopSection = document.querySelector(`#sectionsGrid .section-item[data-section-id="${sectionId}"]`);
-        if (desktopSection) selectSection(desktopSection, sectionId);
-    };
-
-    // Init first section
+    // Init "all" logos section by default
     setTimeout(() => {
-        const firstChip = document.querySelector('.mob-sec-chip');
-        if (firstChip && isMob()) {
-            const sid = firstChip.dataset.sectionId;
-            mobSelectSection(firstChip, parseInt(sid));
+        const allChip = document.querySelector('.mob-sec-chip[data-section-id="all"]');
+        if (allChip) {
+            mobSelectSection(allChip, 'all');
         }
-    }, 500);
+    }, 200);
 
     /* ── Text panel sync ── */
     window.syncMobText = function() {
@@ -2449,6 +2648,31 @@ document.addEventListener('DOMContentLoaded', () => {
     window.expandMobColors = function() {
         document.getElementById('mobColorsCol')?.classList.add('expanded');
     };
+
+    /* ── Mobile Tab Switching ── */
+    window.mobSwitchTab = function(tab) {
+        document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
+        const activeTab = document.querySelector(`.mob-tab[data-tab="${tab}"]`);
+        if (activeTab) activeTab.classList.add('active');
+
+        document.querySelectorAll('.mob-panel').forEach(p => p.classList.remove('active'));
+        const tabCapitalized = tab.charAt(0).toUpperCase() + tab.slice(1);
+        const activePanel = document.getElementById(`mobPanel${tabCapitalized}`);
+        if (activePanel) activePanel.classList.add('active');
+    };
+
+    // Auto-load "all" logos on boot
+    const initAllLogos = () => {
+        const allBtn = document.querySelector('.section-nav-btn[data-section-id="all"]');
+        if (allBtn) selectSection(allBtn, 'all');
+        const mobAllBtn = document.querySelector('.mob-sec-chip[data-section-id="all"]');
+        if (mobAllBtn) mobSelectSection(mobAllBtn, 'all');
+    };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAllLogos);
+    } else {
+        initAllLogos();
+    }
 
 })();
 
