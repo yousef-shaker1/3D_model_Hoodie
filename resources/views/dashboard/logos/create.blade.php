@@ -65,19 +65,19 @@
 
                             <!-- صورة اللوجو -->
                             <div class="row mb-3">
-                                <label class="col-md-2 col-form-label">صورة اللوجو</label>
+                                <label class="col-md-2 col-form-label">صور اللوجوهات</label>
                                 <div class="col-md-10">
                                     <input type="file"
-                                           name="image"
-                                           class="form-control @error('image') is-invalid @enderror"
+                                           name="images[]"
+                                           class="form-control @error('images') is-invalid @enderror"
                                            accept="image/*"
-                                           onchange="previewLogo(this)">
-                                    @error('image')
+                                           multiple
+                                           onchange="previewLogos(this)">
+                                    @error('images')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                     <div class="mt-2" id="previewWrap" style="display:none;">
-                                        <img id="logoPreview" src="" width="80" height="80"
-                                             style="object-fit:contain; background:#f5f5f5; border-radius:8px; padding:5px;">
+                                        <div id="logosPreview" class="d-flex flex-wrap gap-2"></div>
                                     </div>
                                 </div>
                             </div>
@@ -107,14 +107,31 @@
 
 @section('js')
 <script>
-function previewLogo(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = e => {
-            document.getElementById('logoPreview').src = e.target.result;
-            document.getElementById('previewWrap').style.display = 'block';
-        };
-        reader.readAsDataURL(input.files[0]);
+function previewLogos(input) {
+    const previewWrap = document.getElementById('previewWrap');
+    const logosPreview = document.getElementById('logosPreview');
+    logosPreview.innerHTML = '';
+    
+    if (input.files && input.files.length > 0) {
+        previewWrap.style.display = 'block';
+        
+        Array.from(input.files).forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.width = 80;
+                img.height = 80;
+                img.style.objectFit = 'contain';
+                img.style.background = '#f5f5f5';
+                img.style.borderRadius = '8px';
+                img.style.padding = '5px';
+                logosPreview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    } else {
+        previewWrap.style.display = 'none';
     }
 }
 </script>

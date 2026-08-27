@@ -26,17 +26,20 @@ class LogoController extends Controller
     {
         $request->validate([
             'logo_section_id' => 'required|exists:logo_sections,id',
-            'image'           => 'required|image|mimes:png,jpg,jpeg,svg,webp|max:2048',
+            'images'          => 'required|array',
+            'images.*'        => 'image|mimes:png,jpg,jpeg,svg,webp|max:2048',
         ]);
 
-        $imagePath = $request->file('image')->store('logos/images', 'public');
+        foreach ($request->file('images') as $image) {
+            $imagePath = $image->store('logos/images', 'public');
 
-        LogoModel::create([
-            'logo_section_id' => $request->logo_section_id,
-            'image'           => $imagePath,
-        ]);
+            LogoModel::create([
+                'logo_section_id' => $request->logo_section_id,
+                'image'           => $imagePath,
+            ]);
+        }
 
-        return redirect()->route('logos.index')->with('success', 'تم إضافة اللوجو بنجاح');
+        return redirect()->route('logos.index')->with('success', 'تم إضافة اللوجوهات بنجاح');
     }
 
     public function edit(LogoModel $logo)

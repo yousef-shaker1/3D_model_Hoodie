@@ -704,6 +704,9 @@ function startFreeControl() {
     document.body.classList.add('free-control-active');
     modelViewer.setAttribute('camera-controls', '');
     modelViewer.setAttribute('touch-action', 'pan-y');
+    // نثبت زاوية الميل (فوق/تحت) عند 75deg، ونسيب الدوران يمين/شمال حر بالكامل
+    modelViewer.setAttribute('min-camera-orbit', 'auto 75deg auto');
+    modelViewer.setAttribute('max-camera-orbit', 'auto 75deg auto');
     viewButtons.forEach(b => b.classList.remove('active'));
 }
 function stopFreeControl() {
@@ -713,6 +716,9 @@ function stopFreeControl() {
     document.body.classList.remove('free-control-active');
     modelViewer.removeAttribute('camera-controls');
     modelViewer.setAttribute('touch-action', 'none');
+    // نرجع الحدود لوضعها الافتراضي (بلا قيود)
+    modelViewer.removeAttribute('min-camera-orbit');
+    modelViewer.removeAttribute('max-camera-orbit');
     modelViewer.cameraOrbit = cameraViews[currentView];
     updateVisibleLogos();
     viewButtons.forEach(b => { if (b.dataset.view === currentView) b.classList.add('active'); });
