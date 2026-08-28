@@ -42,6 +42,9 @@ class AiChatController extends Controller
   - اختيار مقاس: {"type": "select_size", "size": "M"}
   - فتح نافذة الطلب: {"type": "open_order_modal"}
   - فتح نافذة تصدير الصور: {"type": "open_export_modal"}
+  - تغيير الوجه: {"type": "change_view", "view": "back"} (القيم: front, back, left, right)
+  - إضافة نص: {"type": "add_text", "text": "النص المطلوب", "view": "back"} (view اختياري: front/back/left/right، الافتراضي front)
+  - إضافة لوجو عشوائي: {"type": "add_random_logo", "view": "back"} (view اختياري: front/back/left/right، الافتراضي front)
   - من غير إجراء: null
 
 لازم ترد بصيغة JSON فقط بدون أي نص إضافي قبلها أو بعدها، بالشكل ده بالظبط:

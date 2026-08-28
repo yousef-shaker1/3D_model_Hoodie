@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>WearCraft — مصمم 3D</title>
+    <title>Stylak — مصمم 3D</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Cairo:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Aref+Ruqaa:wght@400;700&family=Reem+Kufi:wght@400;700&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Tajawal:wght@300;400;500;700&family=Changa:wght@300;400;600;700&family=Lalezar&family=Katibeh&family=Rakkas&family=Scheherazade+New:wght@400;700&family=Lateef:wght@400;700&family=El+Messiri:wght@400;700&family=Marhey:wght@300;400;600&display=swap" rel="stylesheet">
@@ -18,15 +18,15 @@
     .ai-chat-close{background:none;border:none;color:var(--gold-light,#e6c98a);font-size:14px;cursor:pointer;}
     .ai-chat-messages{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
     .ai-msg{max-width:85%;padding:8px 12px;border-radius:12px;font-size:12.5px;line-height:1.6;}
-    .ai-msg-bot{align-self:flex-start;background:rgba(184,146,74,0.12);color:#f1ede4;}
-    .ai-msg-user{align-self:flex-end;background:rgba(184,146,74,0.85);color:#1a1612;}
+    .ai-msg-bot{align-self:flex-start;background:rgba(184,146,74,0.12);color:#000000;}
+    .ai-msg-user{align-self:flex-end;background:rgba(184,146,74,0.85);color: #000000;}
     .ai-chat-typing{display:none;padding:0 14px 8px;gap:4px;}
     .ai-chat-typing span{width:6px;height:6px;border-radius:50%;background:var(--gold-light,#e6c98a);animation:aiBlink 1s infinite ease-in-out;}
     .ai-chat-typing span:nth-child(2){animation-delay:0.15s;}
     .ai-chat-typing span:nth-child(3){animation-delay:0.3s;}
     @keyframes aiBlink{0%,80%,100%{opacity:0.2}40%{opacity:1}}
     .ai-chat-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid rgba(184,146,74,0.2);}
-    #aiChatInput{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(184,146,74,0.25);border-radius:100px;padding:8px 12px;color:#f1ede4;font-size:12.5px;outline:none;}
+    #aiChatInput{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(184,146,74,0.25);border-radius:100px;padding:8px 12px;color:#000000;font-size:12.5px;outline:none;}
     #aiChatSend{background:var(--gold-light,#e6c98a);color:#1a1612;border:none;width:34px;height:34px;border-radius:50%;font-size:14px;cursor:pointer;}
     #aiChatSend:disabled{opacity:0.5;cursor:not-allowed;}
     </style>
@@ -43,7 +43,7 @@
     <div class="ls-bg-pattern"></div>
     <div class="ls-inner">
         <div class="ls-ornament"></div> 
-                        <div class="ls-brand">Wear<em>C</em>raft</div>
+                        <div class="ls-brand">Sty<em>l</em>ak</div>
 
         <div class="ls-ornament"></div>
         <div class="ls-tagline">3D Product Designer</div>
@@ -58,7 +58,7 @@
         <div class="sb-header">
             <button class="sidebar-close" onclick="document.getElementById('sidebar').classList.remove('open')">✕</button>
             <div class="sb-logo-wrap">
-                <div class="sb-brand">Wear<em>C</em>raft</div>
+                <div class="sb-brand">Sty<em>l</em>ak</div>
             </div>
             <div class="sb-subtitle">3D Product Designer</div>
             <div class="sb-product-badge">تيشيرت بيزك</div>
@@ -264,7 +264,7 @@
 <button id="aiChatToggle" title="محتاج مساعدة؟">💬</button>
 <div id="aiChatWindow">
     <div class="ai-chat-header">
-        <div class="ai-chat-title">مساعد <em>WearCraft</em></div>
+        <div class="ai-chat-title">مساعد <em>Stylak</em></div>
         <button class="ai-chat-close" onclick="toggleAiChat(false)">✕</button>
     </div>
     <div class="ai-chat-messages" id="aiChatMessages">
@@ -610,6 +610,40 @@ function executeAiAction(action) {
         openOrderModal();
     } else if (action.type === 'open_export_modal') {
         openExportModal();
+    } else if (action.type === 'change_view') {
+        // Change to specified view
+        const viewBtn = document.querySelector(`.view-btn[data-view="${action.view}"]`);
+        if (viewBtn) viewBtn.click();
+    } else if (action.type === 'add_text') {
+        // Change to specified view first if provided
+        const targetView = action.view || 'front';
+        if (targetView !== currentView) {
+            const viewBtn = document.querySelector(`.view-btn[data-view="${targetView}"]`);
+            if (viewBtn) viewBtn.click();
+        }
+        // Add text to center of hoodie
+        const r = hoodieWrapper.getBoundingClientRect();
+        const colorVal = '#ffffff';
+        const fontVal = "'Cairo', sans-serif";
+        addText(action.text, action.text, colorVal, fontVal, false, r.width / 2, r.height / 2);
+    } else if (action.type === 'add_random_logo') {
+        // Change to specified view first if provided
+        const targetView = action.view || 'front';
+        if (targetView !== currentView) {
+            const viewBtn = document.querySelector(`.view-btn[data-view="${targetView}"]`);
+            if (viewBtn) viewBtn.click();
+        }
+        // Add random logo from library
+        const logoItems = document.querySelectorAll('.logo-item-wrapper:not(.added)');
+        if (logoItems.length > 0) {
+            const randomIndex = Math.floor(Math.random() * logoItems.length);
+            const randomLogo = logoItems[randomIndex];
+            const src = randomLogo.dataset.src;
+            if (src) {
+                const r = hoodieWrapper.getBoundingClientRect();
+                addLogo(src, r.width / 2, r.height / 2);
+            }
+        }
     }
 }
 
@@ -775,27 +809,44 @@ document.getElementById('rotateCCW').addEventListener('click', () => { if (!sele
 document.getElementById('rotateCW').addEventListener('click',  () => { if (!selectedLogoData) return; selectedLogoData.rotation=(selectedLogoData.rotation||0)+15; selectedLogo.style.transform=`rotate(${selectedLogoData.rotation}deg)`; updatePriceCard(); });
 document.getElementById('zoomIn').addEventListener('click',  () => { 
     if (!selectedLogoData) return; 
-    const newWidth = Math.min(100, selectedLogoData.widthPercent*1.1);
-    const newHeight = Math.min(100, selectedLogoData.heightPercent*1.1);
     
-    selectedLogoData.widthPercent = newWidth;
-    selectedLogoData.heightPercent = newHeight;
-    selectedLogo.style.width=selectedLogoData.widthPercent+'%'; 
-    selectedLogo.style.height=selectedLogoData.heightPercent+'%'; 
-    
-    const validation = validateDesignDimensions();
-    if (!validation.valid) {
-        showToast(validation.message);
+    if (selectedLogoData.type === 'text') {
+        // For text, change fontSizeCqw
+        selectedLogoData.fontSizeCqw = Math.min(20, (selectedLogoData.fontSizeCqw || 5) + 1);
+        selectedLogo.querySelector('span').style.fontSize = selectedLogoData.fontSizeCqw + 'cqw';
+    } else {
+        // For images, change width/height percent
+        const newWidth = Math.min(100, selectedLogoData.widthPercent*1.1);
+        const newHeight = Math.min(100, selectedLogoData.heightPercent*1.1);
+        
+        selectedLogoData.widthPercent = newWidth;
+        selectedLogoData.heightPercent = newHeight;
+        selectedLogo.style.width=selectedLogoData.widthPercent+'%'; 
+        selectedLogo.style.height=selectedLogoData.heightPercent+'%'; 
+        
+        const validation = validateDesignDimensions();
+        if (!validation.valid) {
+            showToast(validation.message);
+        }
     }
     
     updatePriceCard(); 
 });
 document.getElementById('zoomOut').addEventListener('click', () => { 
     if (!selectedLogoData) return; 
-    selectedLogoData.widthPercent=Math.max(2, selectedLogoData.widthPercent*0.9); 
-    selectedLogoData.heightPercent=Math.max(2, selectedLogoData.heightPercent*0.9); 
-    selectedLogo.style.width=selectedLogoData.widthPercent+'%'; 
-    selectedLogo.style.height=selectedLogoData.heightPercent+'%'; 
+    
+    if (selectedLogoData.type === 'text') {
+        // For text, change fontSizeCqw
+        selectedLogoData.fontSizeCqw = Math.max(1, (selectedLogoData.fontSizeCqw || 5) - 1);
+        selectedLogo.querySelector('span').style.fontSize = selectedLogoData.fontSizeCqw + 'cqw';
+    } else {
+        // For images, change width/height percent
+        selectedLogoData.widthPercent=Math.max(2, selectedLogoData.widthPercent*0.9); 
+        selectedLogoData.heightPercent=Math.max(2, selectedLogoData.heightPercent*0.9); 
+        selectedLogo.style.width=selectedLogoData.widthPercent+'%'; 
+        selectedLogo.style.height=selectedLogoData.heightPercent+'%'; 
+    }
+    
     updatePriceCard(); 
 });
 document.getElementById('deleteLogo').addEventListener('click', () => {
@@ -1720,7 +1771,7 @@ async function generateExportImages() {
     const ctx=finalCanvas.getContext('2d');
     ctx.fillStyle='#1a1612'; ctx.fillRect(0,0,totalW,totalH);
     ctx.fillStyle='#b8924a'; ctx.font='bold 28px "Cormorant Garamond",serif'; ctx.textAlign='center';
-    ctx.fillText('WearCraft — تصميم التيشيرت',totalW/2,PADDING+28);
+    ctx.fillText('Stylak — تصميم التيشيرت',totalW/2,PADDING+28);
     const positions=[{col:0,row:0},{col:1,row:0},{col:0,row:1},{col:1,row:1}];
     await Promise.all(composited.map((item,i)=>new Promise(resolve=>{
         const{col,row}=positions[i],x=PADDING+col*(CELL+GAP),y=PADDING+50+row*(CELL+LABEL_H+GAP);
@@ -1744,7 +1795,7 @@ async function generateExportImages() {
     footerEl.innerHTML='';
     const _c=document.createElement('button'); _c.className='btn-cancel'; _c.textContent='إغلاق'; _c.onclick=()=>closeModal('exportModal');
     const _d=document.createElement('button'); _d.className='btn-submit'; _d.textContent='⬇️ تحميل الصورة';
-    _d.onclick=()=>{ const a=document.createElement('a'); a.href=window._exportFinalImage; a.download='WearCraft-design.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a); };
+    _d.onclick=()=>{ const a=document.createElement('a'); a.href=window._exportFinalImage; a.download='Stylak-design.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a); };
     footerEl.appendChild(_c); footerEl.appendChild(_d);
 }
 
@@ -2089,7 +2140,52 @@ function updatePriceCard() {
 function openOrderModal() {
     const all=Object.values(logosByView).flat();
     // if(!all.length){showToast('من فضلك ضيف لوجو الأول!');return;}
+    
+    // Reset modal content to original form
+    resetOrderModal();
+    
     document.getElementById('orderModal').classList.add('open');
+}
+
+function resetOrderModal() {
+    // Hide success message if exists
+    const successMsg = document.getElementById('orderSuccessMsg');
+    if (successMsg) {
+        successMsg.remove();
+    }
+    
+    // Show all form fields
+    const formFields = document.getElementById('orderModalBody').querySelectorAll('.form-group, #shippingPriceRow');
+    formFields.forEach(field => field.style.display = '');
+    
+    // Restore original footer buttons
+    const footer = document.getElementById('orderModalFooter');
+    footer.innerHTML = `
+        <button class="btn-cancel" onclick="closeModal('orderModal')">إلغاء</button>
+        <button class="btn-submit" id="submitOrderBtn" onclick="submitOrder()">
+            <span id="submitBtnText">تأكيد الطلب</span>
+            <span id="submitBtnLoader" style="display:none;">جاري الإرسال...</span>
+        </button>
+    `;
+    
+    // Reset submit button state
+    const btn = document.getElementById('submitOrderBtn');
+    if (btn) {
+        btn.disabled = false;
+        document.getElementById('submitBtnText').style.display = '';
+        document.getElementById('submitBtnLoader').style.display = 'none';
+    }
+    
+    // Clear form fields
+    document.getElementById('orderName').value = '';
+    document.getElementById('orderPhone').value = '';
+    document.getElementById('orderAddress').value = '';
+    document.getElementById('orderGovernorate').value = '';
+    document.getElementById('orderSize').value = '';
+    document.getElementById('orderPromoCode').value = '';
+    document.getElementById('orderNotes').value = '';
+    document.getElementById('shippingPriceRow').style.display = 'none';
+    document.getElementById('promoCodeMessage').innerHTML = '';
 }
 
 
@@ -2241,7 +2337,23 @@ async function submitOrder() {
         }
         
         if(data.success){
-            document.getElementById('orderModalBody').innerHTML=`<div class="success-msg"><span class="success-icon">✦</span><h4>تم إرسال <em>طلبك</em></h4><p>رقم الطلب: <strong>#${data.order_id||'—'}</strong></p><p style="margin-top:6px;">هنتواصل معاك على ${phone} قريباً</p></div>`;
+            // Hide form fields and show success message
+            const formFields = document.getElementById('orderModalBody').querySelectorAll('.form-group, #shippingPriceRow');
+            formFields.forEach(field => field.style.display = 'none');
+            
+            // Create and show success message
+            let successMsg = document.getElementById('orderSuccessMsg');
+            if (!successMsg) {
+                successMsg = document.createElement('div');
+                successMsg.id = 'orderSuccessMsg';
+                successMsg.className = 'success-msg';
+                successMsg.style.textAlign = 'center';
+                successMsg.style.padding = '30px 20px';
+                document.getElementById('orderModalBody').appendChild(successMsg);
+            }
+            successMsg.innerHTML = `<span class="success-icon">✦</span><h4>تم إرسال <em>طلبك</em></h4><p>رقم الطلب: <strong>#${data.order_id||'—'}</strong></p><p style="margin-top:6px;">هنتواصل معاك على ${phone} قريباً</p>`;
+            successMsg.style.display = 'block';
+            
             document.getElementById('orderModalFooter').innerHTML=`<button class="btn-submit" onclick="closeModal('orderModal')" style="flex:1">حسناً ✓</button>`;
         } else {
             console.error('Server returned error:', data);
@@ -2259,7 +2371,14 @@ async function submitOrder() {
     }
 }
 
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModal(id) { 
+    document.getElementById(id).classList.remove('open');
+    
+    // Reset order modal when closing it
+    if (id === 'orderModal') {
+        resetOrderModal();
+    }
+}
 document.querySelectorAll('.modal-overlay').forEach(m=>{ m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); }); });
 
 function toggleTheme() {
@@ -2394,19 +2513,35 @@ document.addEventListener('DOMContentLoaded', () => {
         mobRotateCW:  () => { if (!selectedLogoData) return; selectedLogoData.rotation=(selectedLogoData.rotation||0)+15; selectedLogo.style.transform=`rotate(${selectedLogoData.rotation}deg)`; updatePriceCard(); },
         mobZoomIn:    () => {
             if (!selectedLogoData) return;
-            const nW = Math.min(100, selectedLogoData.widthPercent*1.1);
-            const nH = Math.min(100, selectedLogoData.heightPercent*1.1);
-            selectedLogoData.widthPercent = nW; selectedLogoData.heightPercent = nH;
-            selectedLogo.style.width = nW+'%'; selectedLogo.style.height = nH+'%';
-            const v = validateDesignDimensions(); if (!v.valid) showToast(v.message);
+            
+            if (selectedLogoData.type === 'text') {
+                // For text, change fontSizeCqw
+                selectedLogoData.fontSizeCqw = Math.min(20, (selectedLogoData.fontSizeCqw || 5) + 1);
+                selectedLogo.querySelector('span').style.fontSize = selectedLogoData.fontSizeCqw + 'cqw';
+            } else {
+                // For images, change width/height percent
+                const nW = Math.min(100, selectedLogoData.widthPercent*1.1);
+                const nH = Math.min(100, selectedLogoData.heightPercent*1.1);
+                selectedLogoData.widthPercent = nW; selectedLogoData.heightPercent = nH;
+                selectedLogo.style.width = nW+'%'; selectedLogo.style.height = nH+'%';
+                const v = validateDesignDimensions(); if (!v.valid) showToast(v.message);
+            }
             updatePriceCard();
         },
         mobZoomOut:   () => {
             if (!selectedLogoData) return;
-            selectedLogoData.widthPercent=Math.max(2,selectedLogoData.widthPercent*0.9);
-            selectedLogoData.heightPercent=Math.max(2,selectedLogoData.heightPercent*0.9);
-            selectedLogo.style.width=selectedLogoData.widthPercent+'%';
-            selectedLogo.style.height=selectedLogoData.heightPercent+'%';
+            
+            if (selectedLogoData.type === 'text') {
+                // For text, change fontSizeCqw
+                selectedLogoData.fontSizeCqw = Math.max(1, (selectedLogoData.fontSizeCqw || 5) - 1);
+                selectedLogo.querySelector('span').style.fontSize = selectedLogoData.fontSizeCqw + 'cqw';
+            } else {
+                // For images, change width/height percent
+                selectedLogoData.widthPercent=Math.max(2,selectedLogoData.widthPercent*0.9);
+                selectedLogoData.heightPercent=Math.max(2,selectedLogoData.heightPercent*0.9);
+                selectedLogo.style.width=selectedLogoData.widthPercent+'%';
+                selectedLogo.style.height=selectedLogoData.heightPercent+'%';
+            }
             updatePriceCard();
         },
         mobDeleteLogo: () => {

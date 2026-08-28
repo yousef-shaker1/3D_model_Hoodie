@@ -256,7 +256,7 @@
             background: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%);
             border-color: var(--gold);
             color: #ffffff;
-            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 4px 14px rgb(187 205 39 / 40%);
         }
         .section-nav-btn.search-trigger {
             padding: 6px 10px;
@@ -832,16 +832,17 @@
         
         .logo-on-hoodie.text-type {
             height: auto !important;
-            padding: 2px 4px;
+            padding: 1px 4px;
             border-radius: 4px;
         }
         .logo-on-hoodie.text-type span {
             white-space: nowrap;
-            line-height: 1.2;
+            line-height: 1.1;
             text-align: center;
             word-break: break-word;
             display: inline-block;
             width: 100%;
+            vertical-align: middle;
         }
         .logo-on-hoodie.text-type.fixed-width span {
             white-space: normal;
